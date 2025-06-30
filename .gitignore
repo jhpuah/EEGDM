@@ -1,0 +1,8 @@
+data
+checkpoint
+gen
+lightning_logs
+log
+outputs
+__pycache__
+pip_install_compact.txt
