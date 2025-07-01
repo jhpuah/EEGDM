@@ -4,6 +4,7 @@ import lightning.pytorch as pl
 from .classifier import Classifier as Classifier_v1
 from .classifier_v2 import Classifier as Classifier_v2
 from .classifier_v3 import Classifier as Classifier_v3
+from .classifier_v4_lrs import Classifier as Classifier_v4
 from .diffusion_model import Wavenet
 from .diffusion_model_pl import PLDiffusionModel
 from diffusers import DDPMScheduler
@@ -56,7 +57,7 @@ class PLClassifier(pl.LightningModule):
 
         # print(self.hparams)
 
-        Classifier = [None, Classifier_v1, Classifier_v2, Classifier_v3][cls_version]
+        Classifier = [None, Classifier_v1, Classifier_v2, Classifier_v3, Classifier_v4][cls_version]
 
         diffusion_model: PLDiffusionModel = PLDiffusionModel.load_from_checkpoint(diffusion_model_checkpoint, map_location=self.device)
         self.model = Classifier(model=diffusion_model.ema.ema_model, **model_kwargs)
