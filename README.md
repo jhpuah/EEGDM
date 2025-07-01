@@ -1,5 +1,5 @@
 ```
-conda create -n proper python=3.1V
+conda create -n proper python=3.11
 conda activate proper
 pip install numpy==1.26.4 hydra-core mne torch torchvision torchaudio lightning pyhealth ema-pytorch diffusers einops wandb scipy pyhealth
 ```
