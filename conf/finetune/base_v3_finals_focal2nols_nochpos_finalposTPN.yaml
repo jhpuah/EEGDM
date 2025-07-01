@@ -11,10 +11,10 @@ trainer:
   fast_dev_run: False
   accelerator: 'gpu'
   strategy: 'ddp'
-  devices: [0, 1]
+  devices: [0]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "classifier_base_v3_finals_focal2nols_nochpos"
+      name: "classifier_base_v3_finals_focal2nols_nochpos_finalposTPN"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
@@ -24,7 +24,7 @@ trainer:
       mode: "max"
       save_top_k: 1
       every_n_epochs: 1
-      dirpath: "./checkpoint/finetune/base_v3_finals_focal2nols_nochpos/"
+      dirpath: "./checkpoint/finetune/base_v3_finals_focal2nols_nochpos_finalposTPN/"
       filename: "classifier"
       save_last: True
     - _target_: src.util.EarlyStoppingWithWarmup
@@ -40,7 +40,7 @@ trainer:
   enable_checkpointing: True
   enable_progress_bar: True
   enable_model_summary: True
-  accumulate_grad_batches: 8
+  accumulate_grad_batches: 16
   gradient_clip_val: 3
   gradient_clip_algorithm: "norm"
   deterministic: True
@@ -79,7 +79,7 @@ model:
     final_act: "pool" # cat pool cls
     dropout: 0.05
     have_ch_pos_embed: False
-    final_stack_pos_embed_dim: "TP" # TPN
+    final_stack_pos_embed_dim: "TPN" # TPN
 
   ema_kwargs:
     beta: 0.999

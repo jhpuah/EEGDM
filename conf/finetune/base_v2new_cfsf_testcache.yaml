@@ -3,7 +3,7 @@ rng_seeding:
   workers: True
 
 caching:
-  do_cache: False
+  do_cache: True
   root: "./.cached_data/"
 
 trainer:
@@ -14,7 +14,7 @@ trainer:
   devices: [0, 1]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "classifier_base_v3_finals_focal2nols_nochpos"
+      name: "classifier_base_v2new_cfsf_testcache"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
@@ -24,14 +24,14 @@ trainer:
       mode: "max"
       save_top_k: 1
       every_n_epochs: 1
-      dirpath: "./checkpoint/finetune/base_v3_finals_focal2nols_nochpos/"
+      dirpath: "./checkpoint/finetune/base_v2new_cfsf_testcache/"
       filename: "classifier"
       save_last: True
     - _target_: src.util.EarlyStoppingWithWarmup
       monitor: "val/kappa"
       mode: "max"
       patience: 3
-      warmup: 5
+      warmup: 25
   max_epochs: 50
   min_epochs: 5
   check_val_every_n_epoch: 1
@@ -40,7 +40,7 @@ trainer:
   enable_checkpointing: True
   enable_progress_bar: True
   enable_model_summary: True
-  accumulate_grad_batches: 8
+  accumulate_grad_batches: 4
   gradient_clip_val: 3
   gradient_clip_algorithm: "norm"
   deterministic: True
@@ -63,23 +63,22 @@ model:
     diffusion_t: 1
     query: ["gate"] # inter gate feature
     reduce: ["std"] # mean std
-    rescale: True
     L: 1000
     window_size: 200
     window_step: 200
+    pool_share_clst: False
     pool_merge: "share" # mix cat share
     multi_query_merge: "seq" # cat seq ind
     d_embed: null
     num_heads: 8
     ff: 4
-    stack_struct: "scf"
+    stack_struct: "cfsf"
     n_clst: 4
-    final_stack_struct: "sfsfsfsf"
+    final_stack_struct: null
+    final_stack_pos_embed: True
     n_class: 6
     final_act: "pool" # cat pool cls
     dropout: 0.05
-    have_ch_pos_embed: False
-    final_stack_pos_embed_dim: "TP" # TPN
 
   ema_kwargs:
     beta: 0.999
@@ -98,13 +97,13 @@ model:
   criterion_kwargs:
     weight: null  
     reduction: "mean"
-    label_smoothing: 0
-    gamma: 2
+    label_smoothing: 0.1
+    gamma: 0
 
   fwd_with_noise: False
   # data_is_cached: False
   run_test_together: False
-  cls_version: 3
+  cls_version: 2
   lrd_kwargs:
     use_new_setup: True
     no_wd: ["cls_token"]

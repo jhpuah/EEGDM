@@ -11,11 +11,12 @@ class TUEVDataField(NamedTuple):
     trans: Callable | None = None
 
 class TUEVDataset(torch.utils.data.Dataset):
-    def __init__(self, root, schema: Sequence[TUEVDataField]=[("signal", torch.float), ("label", torch.long)], stft_kwargs=None):
+    def __init__(self, root, schema: Sequence[TUEVDataField]=[("signal", torch.float), ("label", torch.long)], stft_kwargs=None, return_index=False):
         self.root = root
-        self.files = glob(str(os.path.join(root, "*.pkl")))
+        self.files = sorted(glob(str(os.path.join(root, "*.pkl"))))
         self.fields = [TUEVDataField(*f) for f in schema]
         self.stft_kwargs = stft_kwargs
+        self.return_index = return_index
 
     def __len__(self):
         return len(self.files)
@@ -32,5 +33,8 @@ class TUEVDataset(torch.utils.data.Dataset):
 
         if self.stft_kwargs:
             out.append(torch.stft(out[0], return_complex=True, **self.stft_kwargs).abs())
+
+        if self.return_index:
+            out.append(torch.tensor([index], torch.long))
 
         return out
