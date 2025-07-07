@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 from model.classifier_pl import PLClassifier
+from model.cclassifier_pl import PLClassifier as PLClassifier_v2
 from dataloader.TUEVDataset import TUEVDataset
 from pyhealth.metrics.multiclass import multiclass_metrics_fn
 from hydra.utils import instantiate
@@ -9,7 +10,8 @@ from sklearn import metrics
 
 # TODO figure out how to distribute without repeated data
 def entry(config):
-    model = PLClassifier.load_from_checkpoint(config["checkpoint"], map_location=config["device"])
+    pl_cls=[None, PLClassifier, PLClassifier_v2][config.get("pl_cls_version", 1)]
+    model = pl_cls.load_from_checkpoint(config["checkpoint"], map_location=config["device"])
     dataset = TUEVDataset(
         config["data_dir"],
         schema=instantiate(config["schema"])

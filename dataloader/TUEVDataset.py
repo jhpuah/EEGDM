@@ -35,6 +35,6 @@ class TUEVDataset(torch.utils.data.Dataset):
             out.append(torch.stft(out[0], return_complex=True, **self.stft_kwargs).abs())
 
         if self.return_index:
-            out.append(torch.tensor([index], torch.long))
+            out.append(torch.tensor([index], dtype=torch.long))
 
         return out

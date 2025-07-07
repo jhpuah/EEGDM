@@ -3,6 +3,7 @@ import lightning.pytorch as pl
 import torch.utils
 import torch.utils.data
 from model.classifier_pl import PLClassifier
+from model.cclassifier_pl import PLClassifier as PLClassifier_v2
 from dataloader.TUEVDataset import TUEVDataset
 import os
 from omegaconf import DictConfig
@@ -13,18 +14,31 @@ import string
 from tqdm import tqdm
 
 def entry(config: DictConfig):
-    if config["caching"]["do_cache"]:
-        cache_random_dir = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-        cache_rand_root = os.path.join(config["caching"]["root"], cache_random_dir)
-        while os.path.isdir(cache_rand_root):
-            cache_random_dir = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-            cache_rand_root = os.path.join(config["caching"]["root"], cache_random_dir)
-    
     pl.seed_everything(**config["rng_seeding"])
 
     trainer = instantiate(config["trainer"])
+    data_is_cached = config.get("data_is_cached", False)
+    if data_is_cached:
+        metadata_provided = {
+            "diffusion_model_checkpoint": config["model"]["diffusion_model_checkpoint"],
+            "diffusion_t": config["model"]["model_kwargs"]["diffusion_t"],
+            "query": config["model"]["model_kwargs"]["query"],
+            "reduce": config["model"]["model_kwargs"]["reduce"],
+            "rescale": config["model"]["model_kwargs"]["rescale"],
+            "L": config["model"]["model_kwargs"]["L"],
+            "window_size": config["model"]["model_kwargs"]["window_size"],
+            "window_step": config["model"]["model_kwargs"]["window_step"],
+            "pool_merge": config["model"]["model_kwargs"]["pool_merge"],
+            "multi_query_merge": config["model"]["model_kwargs"]["multi_query_merge"],
+        }
+        
+        with open(os.path.join(config["data"]["root"], "metadata.pkl"), "rb") as m:
+            metadata = pickle.load(m)
+        assert metadata.keys() == metadata_provided.keys()
+        for k in metadata_provided.keys(): assert metadata[k] == metadata_provided[k]
 
-    model = PLClassifier(
+    pl_cls = [None, PLClassifier, PLClassifier_v2][config.get("pl_cls_version", 1)]
+    model = pl_cls(
         diffusion_model_checkpoint=config["model"]["diffusion_model_checkpoint"],
         model_kwargs=config["model"]["model_kwargs"],
         ema_kwargs=config["model"]["ema_kwargs"],
@@ -32,7 +46,7 @@ def entry(config: DictConfig):
         sch_kwargs=config["model"]["sch_kwargs"],
         criterion_kwargs=config["model"]["criterion_kwargs"],
         fwd_with_noise=config["model"]["fwd_with_noise"],
-        data_is_cached=config["caching"]["do_cache"],
+        data_is_cached=data_is_cached,
         run_test_together=config["model"]["run_test_together"],
         cls_version=config["model"]["cls_version"],
         lrd_kwargs=config["model"]["lrd_kwargs"]
@@ -41,74 +55,11 @@ def entry(config: DictConfig):
     data_config = instantiate(config["data"])
 
 
-    if config["caching"]["do_cache"]:
-        _cache_batch_size = 100
-        # raise NotImplementedError()
+    if data_is_cached:
         train_loader = torch.utils.data.DataLoader(
             TUEVDataset(
                 os.path.join(data_config["root"], data_config["train_dir"]),
-                schema=data_config["schema"]
-            ), 
-            batch_size=_cache_batch_size,
-            num_workers=4,
-            shuffle=False
-        )
-
-        cache_train_dir = os.path.join(cache_rand_root, "train")
-        device = f"cuda:{config['trainer']['devices'][0]}"
-        model.model.to(device=device)
-        if not os.path.isdir(cache_train_dir):
-            os.makedirs(cache_train_dir)
-        idx = 0
-        for batch_input in tqdm(train_loader, total=len(train_loader.dataset) // _cache_batch_size + 1):
-            batch = batch_input[0].to(device=device)
-            label = batch_input[1].to(device=device)
-            local = batch_input[2].to(device=device) if len(batch_input) > 2 else None
-
-            computed = model.model.compute_tokens((batch, local))
-            for c, l in zip(computed, label):
-                with open(os.path.join(cache_train_dir, f"{idx}.pkl"), "wb") as f:
-                    pickle.dump({
-                        "__cache_data__": c.cpu().numpy(),
-                        "__cache_label__": l.cpu().numpy()
-                    }, f)
-                idx += 1
-
-        val_loader = torch.utils.data.DataLoader(
-            TUEVDataset(
-                os.path.join(data_config["root"], data_config["val_dir"]),
-                schema=data_config["schema"]
-            ), 
-            batch_size=_cache_batch_size,
-            num_workers=4,
-            shuffle=False
-        )
-        cache_val_dir = os.path.join(cache_rand_root, "val")
-        if not os.path.isdir(cache_val_dir):
-            os.makedirs(cache_val_dir)
-        idx = 0
-        for batch_input in val_loader:
-            batch = batch_input[0].to(device=device)
-            label = batch_input[1].to(device=device)
-            local = batch_input[2].to(device=device) if len(batch_input) > 2 else None
-
-            computed = model.model.compute_tokens((batch, local))
-            for c, l in zip(computed, label):
-                with open(os.path.join(cache_val_dir, f"{idx}.pkl"), "wb") as f:
-                    pickle.dump({
-                        "__cache_data__": c.cpu().numpy(),
-                        "__cache_label__": l.cpu().numpy()
-                    }, f)
-                idx += 1
-
-
-        train_loader = torch.utils.data.DataLoader(
-            TUEVDataset(
-                cache_train_dir,
-                schema=[
-                    ("__cache_data__", torch.float),
-                    ("__cache_label__", torch.long)
-                ]
+                schema=data_config["schema"],
             ), 
             batch_size=data_config["batch_size"],
             num_workers=data_config["num_workers"],
@@ -116,11 +67,8 @@ def entry(config: DictConfig):
 
         val_loader = torch.utils.data.DataLoader(
             TUEVDataset(
-                cache_val_dir,
-                schema=[
-                    ("__cache_data__", torch.float),
-                    ("__cache_label__", torch.long)
-                ]
+                os.path.join(data_config["root"], data_config["val_dir"]),
+                schema=data_config["schema"],
             ), 
             batch_size=data_config["batch_size"],
             num_workers=data_config["num_workers"],
@@ -150,7 +98,7 @@ def entry(config: DictConfig):
     test_loader = torch.utils.data.DataLoader(
         TUEVDataset(
             os.path.join(data_config["root"], data_config["test_dir"]),
-            schema=data_config["schema"],
+            schema=data_config.get("test_schema", data_config["schema"]),
             stft_kwargs=data_config["stft_kwargs"]
         ), 
         # batch_size=data_config["batch_size"],
@@ -163,7 +111,7 @@ def entry(config: DictConfig):
         trainer.fit(model, train_loader, [val_loader, test_loader])
     else:
         trainer.fit(model, train_loader, val_loader)
-        best_model = PLClassifier.load_from_checkpoint(
+        best_model = pl_cls.load_from_checkpoint(
             trainer.checkpoint_callbacks[0].best_model_path
         )
         # pl.Trainer(devices=config["trainer"]["devices"][:1]).test(best_model, test_loader)

@@ -312,6 +312,7 @@ class Classifier(nn.Module):
             )
             self.ch_pos_embed = nn.Parameter(torch.zeros(1, 1, 1, 1, 1, 1, self.model.d_model))
             nn.init.trunc_normal_(self.ch_pos_embed, std=INIT_STD, a=-INIT_STD, b=INIT_STD)
+            d_kv_embed *= 2
         else:
             self.ch_is_left = 0
             self.ch_pos_embed = 0
@@ -434,7 +435,9 @@ class Classifier(nn.Module):
             # print("3", embedded_tokens[0].shape)
             all_tokens = self.multi_query_repack(embedded_tokens)
             # print("4", all_tokens.shape)
-        all_tokens = all_tokens + self.ch_is_left * self.ch_pos_embed
+        ch_pos = self.ch_is_left * self.ch_pos_embed
+        if isinstance(ch_pos, torch.Tensor):
+            all_tokens = torch.cat([all_tokens, (ch_pos).expand(*all_tokens.shape[:5], -1, -1)], dim=-1)
         
         B = all_tokens.shape[0]
         x = self.cls_token.expand(B, -1, -1, -1, -1) + self.t_pos_embed + self.p_pos_embed
