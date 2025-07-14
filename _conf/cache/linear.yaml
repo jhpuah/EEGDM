@@ -1,9 +1,9 @@
-diffusion_model_checkpoint: "./checkpoint/pretrain/backbone.ckpt"
+diffusion_model_checkpoint: "./checkpoint/pretrain/linear.ckpt"
 diffusion_t: 1
-device: "cuda:0"
+device: "cuda:7"
 
 cache:
-  root: "./data/cached/faithful/"
+  root: "./data/cached/linear/"
 
 reduce:
   query: ["gate"] # inter, gate, filter

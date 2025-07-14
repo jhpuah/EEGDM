@@ -13,25 +13,25 @@ trainer:
   devices: [0, 1, 2, 3, 4, 5, 6, 7]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "base_gatem"
+      name: "2base_basest__ddpbatch32_ac_30ep"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
   callbacks: 
     - _target_: lightning.pytorch.callbacks.ModelCheckpoint
-      monitor: "val/kappa"
-      mode: "max"
+      # monitor: "val/kappa"
+      # mode: "max"
       save_top_k: 1
       every_n_epochs: 1
-      dirpath: "./checkpoint/finetune/base_gatem/"
+      dirpath: "./checkpoint/finetune/2base_basest__ddpbatch32_ac_30ep/"
       filename: "classifier"
       save_last: True
     - _target_: src.util.EarlyStoppingWithWarmup
       monitor: "val/kappa"
       mode: "max"
       patience: 3
-      warmup: 20
-  max_epochs: 50
+      warmup: 30
+  max_epochs: 30
   min_epochs: 5
   check_val_every_n_epoch: 1
   num_sanity_val_steps: null
@@ -62,7 +62,7 @@ model:
     diffusion_t: 1
 
     query: ["gate"] # inter, gate, filter
-    reduce: ["mean"] # mean, std
+    reduce: ["std"] # mean, std
     rescale: False
     L: 1000
     window_size: 200
@@ -81,22 +81,22 @@ model:
         
     clst_dim: "TP" # TP
     clst_pos_embed_dim: "" # TPN
-    n_clst: 16
+    n_clst: 4
 
     stack_struct: "scf"
     num_heads: 8
     ff: 4
-    dropout: 0
+    dropout: 0.1
     have_crossnorm: False
 
-    across_pool_stack_struct: ""
+    across_pool_stack_struct: "sf"
     n_ap_clst: 0
     ap_clst_dim: "T" # T
 
     classifier_use_ap_clst: False
     classifier_have_pos_embed: True
     classifier_pos_embed_dim: "TPN" # TPN or TA
-    classifier_stack_struct: "sfsfsfsfsfsfsfsf"
+    classifier_stack_struct: "sfsfsfsf"
     classifier_final_act: "pool" # cat, pool, cls
     n_class: 6
 
@@ -135,7 +135,7 @@ model:
 
 data:
   _target_: builtins.dict
-  root: "./data/cached/base_gatem"
+  root: "./data/cached/faithful"
   train_dir: "train"
   val_dir: "val"
   test_dir: "test"

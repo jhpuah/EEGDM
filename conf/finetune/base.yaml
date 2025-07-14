@@ -2,9 +2,8 @@ rng_seeding:
   seed: ???
   workers: True
 
-caching:
-  do_cache: False
-  root: "./.cached_data/"
+pl_cls_version: 2
+data_is_cached: True
 
 trainer:
   _target_: lightning.pytorch.Trainer
@@ -14,7 +13,7 @@ trainer:
   devices: [0, 1, 2, 3, 4, 5, 6, 7]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "classifier_base"
+      name: "base"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
@@ -31,7 +30,7 @@ trainer:
       monitor: "val/kappa"
       mode: "max"
       patience: 3
-      warmup: 15
+      warmup: 20
   max_epochs: 50
   min_epochs: 5
   check_val_every_n_epoch: 1
@@ -61,23 +60,45 @@ model:
     start: 0
     end: null
     diffusion_t: 1
-    query: ["gate"] # inter gate feature
-    reduce: ["std"] # mean std
+
+    query: ["gate"] # inter, gate, filter
+    reduce: ["std"] # mean, std
+    rescale: False
     L: 1000
     window_size: 200
     window_step: 200
-    pool_share_clst: False
-    pool_merge: "share" # mix cat share
-    multi_query_merge: "seq" # cat seq ind
+    pool_merge: "share" # mix, cat, share
+    multi_query_merge: "seq" # cat, seq, ind
+
     d_embed: null
+    init_weight: False
+    embed_query: False
+    d_query_embed: null
+    have_ch_pos_embed: False
+    cat_ch_pos_embed: True
+    ch_pos_emb_sym: "mirror" # None, "mirror",
+    ch_order: ["FP1-F7", "F7-T3", "T3-T5", "T5-O1", "FP2-F8", "F8-T4", "T4-T6", "T6-O2", "A1-T3", "T3-C3", "C3-CZ", "C4-CZ", "T4-C4", "A2-T4", "FP1-F3", "F3-C3", "C3-P3", "P3-O1", "FP2-F4", "F4-C4", "C4-P4", "P4-O2"]
+        
+    clst_dim: "TP" # TP
+    clst_pos_embed_dim: "" # TPN
+    n_clst: 16
+
+    stack_struct: "scf"
     num_heads: 8
     ff: 4
-    stack_struct: "scf"
-    n_clst: 4
-    final_stack_struct: null
-    final_stack_pos_embed: True
+    dropout: 0
+    have_crossnorm: False
+
+    across_pool_stack_struct: ""
+    n_ap_clst: 0
+    ap_clst_dim: "T" # T
+
+    classifier_use_ap_clst: False
+    classifier_have_pos_embed: True
+    classifier_pos_embed_dim: "TPN" # TPN or TA
+    classifier_stack_struct: "sfsfsfsfsfsfsfsf"
+    classifier_final_act: "pool" # cat, pool, cls
     n_class: 6
-    final_act: "pool" # cat pool cls
 
   ema_kwargs:
     beta: 0.999
@@ -100,18 +121,39 @@ model:
     gamma: 0
 
   fwd_with_noise: False
-  # data_is_cached: False
   run_test_together: False
+  cls_version: 1
+  lrd_kwargs:
+    use_new_setup: True
+    no_wd: ["decoder.cls_token", "decoder.ap_cls_token"]
+    bias_1dim_no_wd: True
+    # lr_decay: 
+    #   - 0.75 
+    #   - ["final_stack.layers.2", "final_stack.layers.3"] # 1
+    #   - ["final_stack.layers.4", "final_stack.layers.5"] # 2
+    #   - ["final_stack.layers.6", "final_stack.layers.7"] # 3
 
 data:
   _target_: builtins.dict
-  root: "./data/faithful"
+  root: "./data/cached/faithful"
   train_dir: "train"
   val_dir: "val"
   test_dir: "test"
   batch_size: 32
   num_workers: 4
   schema:
+    - _target_: dataloader.TUEVDataset.TUEVDataField
+      _args_:
+        - "__cache_data__"
+        - _target_: src.util.dynamic_load
+          item: torch.float
+    - _target_: dataloader.TUEVDataset.TUEVDataField
+      _args_:
+        - "__cache_label__"
+        - _target_: src.util.dynamic_load
+          item: torch.long
+  stft_kwargs: null
+  test_schema:
     - _target_: dataloader.TUEVDataset.TUEVDataField
       _args_:
         - "signal"
@@ -126,4 +168,28 @@ data:
           item: torch.long
         - _target_: src.util.dynamic_load
           item: src.util.minus_one
-  stft_kwargs: null
+
+# data:
+#   _target_: builtins.dict
+#   root: "./data/faithful"
+#   train_dir: "train"
+#   val_dir: "val"
+#   test_dir: "test"
+#   batch_size: 16
+#   num_workers: 4
+#   schema:
+#     - _target_: dataloader.TUEVDataset.TUEVDataField
+#       _args_:
+#         - "signal"
+#         - _target_: src.util.dynamic_load
+#           item: torch.float
+#         - _target_: src.util.dynamic_load
+#           item: src.util.staged_mu_law
+#     - _target_: dataloader.TUEVDataset.TUEVDataField
+#       _args_:
+#         - "label"
+#         - _target_: src.util.dynamic_load
+#           item: torch.long
+#         - _target_: src.util.dynamic_load
+#           item: src.util.minus_one
+#   stft_kwargs: null

@@ -13,7 +13,7 @@ trainer:
   devices: [0, 1, 2, 3, 4, 5, 6, 7]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "base_gatem"
+      name: "base_filters"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
@@ -23,7 +23,7 @@ trainer:
       mode: "max"
       save_top_k: 1
       every_n_epochs: 1
-      dirpath: "./checkpoint/finetune/base_gatem/"
+      dirpath: "./checkpoint/finetune/base_filters/"
       filename: "classifier"
       save_last: True
     - _target_: src.util.EarlyStoppingWithWarmup
@@ -61,8 +61,8 @@ model:
     end: null
     diffusion_t: 1
 
-    query: ["gate"] # inter, gate, filter
-    reduce: ["mean"] # mean, std
+    query: ["filter"] # inter, gate, filter
+    reduce: ["std"] # mean, std
     rescale: False
     L: 1000
     window_size: 200
@@ -135,7 +135,7 @@ model:
 
 data:
   _target_: builtins.dict
-  root: "./data/cached/base_gatem"
+  root: "./data/cached/base_filters"
   train_dir: "train"
   val_dir: "val"
   test_dir: "test"

@@ -3,7 +3,7 @@ diffusion_t: 1
 device: "cuda:0"
 
 cache:
-  root: "./data/cached/faithful/"
+  root: "./data/cached/base/"
 
 reduce:
   query: ["gate"] # inter, gate, filter

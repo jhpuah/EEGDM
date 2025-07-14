@@ -13,7 +13,7 @@ trainer:
   devices: [0, 1, 2, 3, 4, 5, 6, 7]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "base_gatem"
+      name: "2base_basest_ddpbatch64_catposmirror"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
@@ -23,7 +23,7 @@ trainer:
       mode: "max"
       save_top_k: 1
       every_n_epochs: 1
-      dirpath: "./checkpoint/finetune/base_gatem/"
+      dirpath: "./checkpoint/finetune/2base_basest_ddpbatch64_catposmirror/"
       filename: "classifier"
       save_last: True
     - _target_: src.util.EarlyStoppingWithWarmup
@@ -62,7 +62,7 @@ model:
     diffusion_t: 1
 
     query: ["gate"] # inter, gate, filter
-    reduce: ["mean"] # mean, std
+    reduce: ["std"] # mean, std
     rescale: False
     L: 1000
     window_size: 200
@@ -74,17 +74,17 @@ model:
     init_weight: False
     embed_query: False
     d_query_embed: null
-    have_ch_pos_embed: False
+    have_ch_pos_embed: True
     cat_ch_pos_embed: True
     ch_pos_emb_sym: "mirror" # None, "mirror",
     ch_order: ["FP1-F7", "F7-T3", "T3-T5", "T5-O1", "FP2-F8", "F8-T4", "T4-T6", "T6-O2", "A1-T3", "T3-C3", "C3-CZ", "C4-CZ", "T4-C4", "A2-T4", "FP1-F3", "F3-C3", "C3-P3", "P3-O1", "FP2-F4", "F4-C4", "C4-P4", "P4-O2"]
         
     clst_dim: "TP" # TP
     clst_pos_embed_dim: "" # TPN
-    n_clst: 16
+    n_clst: 4
 
     stack_struct: "scf"
-    num_heads: 8
+    num_heads: 16
     ff: 4
     dropout: 0
     have_crossnorm: False
@@ -96,7 +96,7 @@ model:
     classifier_use_ap_clst: False
     classifier_have_pos_embed: True
     classifier_pos_embed_dim: "TPN" # TPN or TA
-    classifier_stack_struct: "sfsfsfsfsfsfsfsf"
+    classifier_stack_struct: "sfsfsfsf"
     classifier_final_act: "pool" # cat, pool, cls
     n_class: 6
 
@@ -135,11 +135,11 @@ model:
 
 data:
   _target_: builtins.dict
-  root: "./data/cached/base_gatem"
+  root: "./data/cached/faithful"
   train_dir: "train"
   val_dir: "val"
   test_dir: "test"
-  batch_size: 32
+  batch_size: 64
   num_workers: 4
   schema:
     - _target_: dataloader.TUEVDataset.TUEVDataField

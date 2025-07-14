@@ -13,24 +13,24 @@ trainer:
   devices: [0, 1, 2, 3, 4, 5, 6, 7]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "base_gatem"
+      name: "2base_basest_ddpbatch32_tuneema_bacc_initweight_50ep"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
   callbacks: 
     - _target_: lightning.pytorch.callbacks.ModelCheckpoint
-      monitor: "val/kappa"
-      mode: "max"
+      # monitor: "val/bacc"
+      # mode: "max"
       save_top_k: 1
       every_n_epochs: 1
-      dirpath: "./checkpoint/finetune/base_gatem/"
+      dirpath: "./checkpoint/finetune/2base_basest_ddpbatch32_tuneema_bacc_initweight_50ep/"
       filename: "classifier"
       save_last: True
     - _target_: src.util.EarlyStoppingWithWarmup
-      monitor: "val/kappa"
+      monitor: "val/bacc"
       mode: "max"
       patience: 3
-      warmup: 20
+      warmup: 50
   max_epochs: 50
   min_epochs: 5
   check_val_every_n_epoch: 1
@@ -62,7 +62,7 @@ model:
     diffusion_t: 1
 
     query: ["gate"] # inter, gate, filter
-    reduce: ["mean"] # mean, std
+    reduce: ["std"] # mean, std
     rescale: False
     L: 1000
     window_size: 200
@@ -71,7 +71,7 @@ model:
     multi_query_merge: "seq" # cat, seq, ind
 
     d_embed: null
-    init_weight: False
+    init_weight: True
     embed_query: False
     d_query_embed: null
     have_ch_pos_embed: False
@@ -81,7 +81,7 @@ model:
         
     clst_dim: "TP" # TP
     clst_pos_embed_dim: "" # TPN
-    n_clst: 16
+    n_clst: 4
 
     stack_struct: "scf"
     num_heads: 8
@@ -96,14 +96,14 @@ model:
     classifier_use_ap_clst: False
     classifier_have_pos_embed: True
     classifier_pos_embed_dim: "TPN" # TPN or TA
-    classifier_stack_struct: "sfsfsfsfsfsfsfsf"
+    classifier_stack_struct: "sfsfsfsf"
     classifier_final_act: "pool" # cat, pool, cls
     n_class: 6
 
   ema_kwargs:
-    beta: 0.999
-    update_after_step: 100
-    update_every: 10
+    beta: 0.996
+    update_after_step: 0
+    update_every: 1
 
   opt_kwargs:
     lr: 1e-5
@@ -135,7 +135,7 @@ model:
 
 data:
   _target_: builtins.dict
-  root: "./data/cached/base_gatem"
+  root: "./data/cached/faithful"
   train_dir: "train"
   val_dir: "val"
   test_dir: "test"

@@ -6,6 +6,7 @@ from model.diffusion_model_pl import PLDiffusionModel
 import os
 from tqdm import tqdm
 import pickle
+import shutil
 
 @torch.no_grad()
 def entry(config):
@@ -71,7 +72,7 @@ def entry(config):
     cache_val_dir = os.path.join(cache_config["root"], "val")
     if not os.path.isdir(cache_val_dir):
         os.makedirs(cache_val_dir)
-    for batch_input in val_loader:
+    for batch_input in tqdm(val_loader, total=len(val_loader.dataset) // data_config["batch_size"] + 1):
         batch = batch_input[0].to(device=device)
         label = batch_input[1].to(device=device)
         local = batch_input[2].to(device=device) if len(batch_input) > 3 else None
@@ -94,4 +95,5 @@ def entry(config):
     with open(os.path.join(cache_config["root"], "metadata.pkl"), "wb") as f:
         pickle.dump(metadata, f)
     
-    # TODO copy test to the cached file
+    # Test data is untouched
+    shutil.copytree(os.path.join(data_config["root"], data_config["test_dir"]), os.path.join(cache_config["root"], "test"))

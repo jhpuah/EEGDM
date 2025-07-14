@@ -1,13 +1,13 @@
 diffusion_model_checkpoint: "./checkpoint/pretrain/backbone.ckpt"
 diffusion_t: 1
-device: "cuda:0"
+device: "cuda:7"
 
 cache:
-  root: "./data/cached/faithful/"
+  root: "./data/cached/base_filterm/"
 
 reduce:
-  query: ["gate"] # inter, gate, filter
-  reduce: ["std"] # mean, std
+  query: ["filter"] # inter, gate, filter
+  reduce: ["mean"] # mean, std
   rescale: False
   L: 1000
   window_size: 200

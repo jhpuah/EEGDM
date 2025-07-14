@@ -9,6 +9,7 @@ from math import sqrt
 from functools import partial
 
 INIT_STD = 0.02
+param_init_fn = torch.rand
 
 class LatentActivityExtractor(nn.Module):
     def __init__(
@@ -296,6 +297,7 @@ class MHAStack(nn.Module):
         self.res_drop = nn.Dropout(p=dropout) if dropout > 0 else nn.Identity()
         
         self.norms = nn.ModuleList([nn.LayerNorm(d_embed) for _ in layers])
+        self.have_crossnorm = have_crossnorm
         if have_crossnorm: self.c_norms = nn.ModuleList([nn.LayerNorm(d_kv_embed) for _ in range(self.cross_count)])
         else: self.c_norms = nn.ModuleList([nn.Identity() for _ in range(self.cross_count)])
 
@@ -344,9 +346,10 @@ class MHAStack(nn.Module):
             nn.init.constant_(n.bias, 0)
             nn.init.constant_(n.weight, 1.0)
         
-        for n in self.c_norms:
-            nn.init.constant_(n.bias, 0)
-            nn.init.constant_(n.weight, 1.0)
+        if self.have_crossnorm:
+            for n in self.c_norms:
+                nn.init.constant_(n.bias, 0)
+                nn.init.constant_(n.weight, 1.0)
 
     def forward(self, x, y=None, c=None):
         if y is not None:
@@ -434,10 +437,10 @@ class LatentActivityDecoder(nn.Module):
             match ch_pos_emb_sym:
                 case "mirror":
                     self.ch_pos_embed_idx = nn.Buffer(torch.tensor(list(map(lambda c: (int(c.split("-")[0][-1]) % 2), ch_order)), dtype=torch.long),)
-                    self.ch_pos_embed_raw = nn.Parameter(torch.randn(1, 1, 1, 1, 1, 2, d_kv_embed))
+                    self.ch_pos_embed_raw = nn.Parameter(param_init_fn(1, 1, 1, 1, 1, 2, d_kv_embed))
                 case None:
                     self.ch_pos_embed_idx = slice(None)
-                    self.ch_pos_embed_raw = nn.Parameter(torch.randn(1, 1, 1, 1, 1, len(ch_order), d_kv_embed))
+                    self.ch_pos_embed_raw = nn.Parameter(param_init_fn(1, 1, 1, 1, 1, len(ch_order), d_kv_embed))
                 case _: raise NotImplementedError()
             if init_weight:nn.init.trunc_normal_(self.ch_pos_embed_raw, std=INIT_STD, a=-INIT_STD, b=INIT_STD)
 
@@ -453,7 +456,7 @@ class LatentActivityDecoder(nn.Module):
             case "share": pass
             case _: raise NotImplementedError()
         if n_pool > 1 and "P" in clst_pos_embed_dim:
-            self.p_pos_embed = nn.Parameter(torch.randn(1, 1, n_pool, 1, d_embed))
+            self.p_pos_embed = nn.Parameter(param_init_fn(1, 1, n_pool, 1, d_embed))
             if init_weight: nn.init.trunc_normal_(self.p_pos_embed, std=INIT_STD, a=-INIT_STD, b=INIT_STD)
         else:
             self.p_pos_embed = 0
@@ -473,7 +476,7 @@ class LatentActivityDecoder(nn.Module):
                 self.multi_query_repack = partial(torch.stack, dim=2)
             case _: raise NotImplementedError()
         if n_tower > 1:
-            self.t_pos_embed = nn.Parameter(torch.randn(1, n_tower, 1, 1, d_embed))
+            self.t_pos_embed = nn.Parameter(param_init_fn(1, n_tower, 1, 1, d_embed))
             if init_weight: nn.init.trunc_normal_(self.t_pos_embed, std=INIT_STD, a=-INIT_STD, b=INIT_STD)
         else:
             self.t_pos_embed = 0
@@ -483,7 +486,7 @@ class LatentActivityDecoder(nn.Module):
         if n_tower > 1 and "T" in clst_dim: clst_shape[1] = n_tower
         if n_pool > 1 and "P" in clst_dim: clst_shape[2] = n_pool
 
-        self.cls_token = nn.Parameter(torch.randn(clst_shape))
+        self.cls_token = nn.Parameter(param_init_fn(clst_shape))
         if init_weight: nn.init.trunc_normal_(self.cls_token, std=INIT_STD, a=-INIT_STD, b=INIT_STD)
         
         assert stack_struct.count("c") * n_tower == n_query
@@ -510,6 +513,7 @@ class LatentActivityDecoder(nn.Module):
                         dropout=dropout,
                         d_adap=0,
                         depth=cumulative_depth,
+                        do_weight_init=init_weight,
                         have_crossnorm=have_crossnorm,
                     )
                 )
@@ -547,7 +551,7 @@ class LatentActivityDecoder(nn.Module):
             ap_clst_shape = [1, 1, n_ap_clst, d_embed]
             if "T" in ap_clst_dim: ap_clst_shape[1] = n_tower
 
-            self.ap_cls_token = nn.Parameter(torch.randn(ap_clst_shape))
+            self.ap_cls_token = nn.Parameter(param_init_fn(ap_clst_shape))
             if init_weight: nn.init.trunc_normal_(self.ap_cls_token, std=INIT_STD, a=-INIT_STD, b=INIT_STD)
 
     def forward(self, all_tokens):
@@ -582,18 +586,18 @@ class LatentActivityDecoder(nn.Module):
         # TODO most x's are not affecting each other some some sort of parallelism can be pulled off?
         # the only loop that cant be paralleled is the one eliminating n, because clst need to be passed to the next layer
         for T, (Bn_PQCH, tower, ac_tower) in enumerate(zip(all_tokens.unbind(dim=2), self.tower, self.across_pool_tower)): # eliminate T
-            for B__PQCH, layer, ac_layer in zip(Bn_PQCH.unbind(dim=1), tower, ac_tower): # eliminate n
+            for B__PQCH, layer, ap_layer in zip(Bn_PQCH.unbind(dim=1), tower, ac_tower): # eliminate n
                 for P, B___QCH in enumerate(B__PQCH.unbind(dim=1)): # eliminate P
                     x[T][P] = layer(x[T][P], B___QCH) # B N H each
                 
-                if ac_layer is not None:
+                if ap_layer is not None:
                     ap_x = x[T]
                     
                     if self.have_ap_clst:
                         ap_x = [ap_clst[T], *ap_x]
                     
                     ap_x = torch.cat(ap_x, dim=1) # B (A + N * P) H, 'A' may be 0
-                    ap_x = ac_layer(ap_x)
+                    ap_x = ap_layer(ap_x)
                     
                     if self.have_ap_clst:
                         ap_clst[T] = ap_x[:, :self.n_ap_clst, :]
@@ -644,7 +648,7 @@ class TransformerClassifier(nn.Module):
         if np.prod(pos_embed_shape) == d_embed or not have_pos_embed:
             self.pos_embed = 0
         else:
-            self.pos_embed = nn.Parameter(torch.randn(pos_embed_shape))
+            self.pos_embed = nn.Parameter(param_init_fn(pos_embed_shape))
             if init_weight:
                 nn.init.trunc_normal_(self.pos_embed, std=INIT_STD, a=-INIT_STD, b=INIT_STD)
 
