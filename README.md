@@ -46,17 +46,17 @@ EEGDM is a novel EEG diffusion model designed for generating realistic EEG signa
 
 <div align="center">
 <br>
-<img src="mainImage2.png" width="666">
+<img src="mainImage2.png" width="566">
 </div>
 
 <div align="center">
 <br>
-<img src="mainImage3.png" width="666">
+<img src="mainImage3.png" width="566">
 </div>
 
 <div align="center">
 <br>
-<img src="mainImage4.png" width="666">
+<img src="mainImage4.png" width="566">
 </div>
 
 ## 📰 Latest Updates
