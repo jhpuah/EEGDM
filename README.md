@@ -1,6 +1,6 @@
 <div align="center">
 <br>
-<img src="assets/title.png" width="166">
+<img src="title.png" width="166">
 <h3>Multimodal Large Diffusion Language Models</h3></div>
 
 <p align="center">
