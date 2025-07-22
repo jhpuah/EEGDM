@@ -29,7 +29,15 @@
 
 ## 🌌 Introduction
 
-EEGDM is a novel EEG diffusion model designed for generating realistic EEG signals. This project aims to provide a framework for research and development in the field of EEG synthesis and analysis.
+EEG-Diff is a novel self-supervised diffusion model designed for superior EEG signal representation learning. Unlike traditional "tokenization-then-masking" approaches, EEG-Diff leverages the power of diffusion models to achieve robust and meaningful representations.
+
+EEG-Diff is distinguished by three key innovations:
+
+• First Application of Diffusion Models for Direct EEG Representation Extraction: This work pioneers the direct use of diffusion models for extracting EEG signal representations, opening up a new avenue for research in neurological signal processing.
+
+• Time-Domain Gaussian Noise for Self-Supervision: EEG-Diff empirically demonstrates that adding Gaussian noise directly in the time domain can effectively achieve self-supervised representation learning, providing a promising alternative to existing methodologies.
+
+• Competitive Performance with Compact Design: The proposed method achieves performance exceeding previous domain-specific models and matches large EEG Foundation Models, despite using significantly less training data and a smaller model size.
 
 ## 😮 Hightlights
 
