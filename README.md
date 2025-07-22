@@ -28,19 +28,37 @@
         alt="MMaDA on Hugging Face"
     />
   </a>
-  <a href="https://github.com/Gen-Verse/MMaDA/blob/main/assets/wx-mmada-0613.jpeg">
-    <img 
-        src="https://img.shields.io/badge/Wechat-Join-green?logo=wechat&amp" 
-        alt="Wechat Group Link"
-    />
-  </a>
+
   
 </p>
+
+<div align="center">
+<br>
+<img src="mainImage.png" width="166">
+</div>
 
 
 ## 🌌 Introduction
 
 EEGDM is a novel EEG diffusion model designed for generating realistic EEG signals. This project aims to provide a framework for research and development in the field of EEG synthesis and analysis.
+
+## 😮 Hightlights
+
+• This work is one of the first (if not the first) to use diffusion models directly in the extraction of EEG signal representations, thus opening a new research direction.  
+• This work empirically shows that self-supervised representation learning can be achieved through adding Gaussian noise in the time domain directly, offering apromising alternative to the tokenization-then-masking method.  
+• The proposed method achieved performance exceeding previous domain-specific models, and matches large EEG JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2015 2 FMs despite the disadvantages in training data size and model size.  
+
+## Main result
+
+<div align="center">
+<br>
+<img src="mainImage1.png" width="166">
+</div>
+
+<div align="center">
+<br>
+<img src="mainImage2.png" width="166">
+</div>
 
 ## 📰 Latest Updates
 
@@ -66,16 +84,30 @@ pip install -r requirements.txt
 ```bash
 python main.py preprocessing=faithful
 ```
+Refering to preprocessing of LaBraM
 
 **Pre-training:**
 ```bash
 python main.py pretrain=base
 ```
 
+**Caching:**
+```bash
+python main.py cache=base_t2
+```
+
 **Fine-tuning:**
 ```bash
 python main.py finetune=base finetune.rng_seeding.seed=0
+python main.py finetune=base_gatem finetune.rng_seeding.seed=0
+python main.py finetune=base_filters finetune.rng_seeding.seed=0
+python main.py finetune=base_filterm finetune.rng_seeding.seed=0
+python main.py finetune=linear finetune.rng_seeding.seed=0
+python main.py finetune=base_t2 finetune.rng_seeding.seed=0
+python main.py finetune=nolaw finetune.rng_seeding.seed=0
+python main.py finetune=noise finetune.rng_seeding.seed=0
 ```
+All seeds need to be iterated from 0 to 4
 
 **Reporting:**
 ```bash
