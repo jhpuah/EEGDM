@@ -33,11 +33,11 @@ EEG-Diff is a novel self-supervised diffusion model designed for superior EEG si
 
 EEG-Diff is distinguished by three key innovations:
 
-• First Application of Diffusion Models for Direct EEG Representation Extraction: This work pioneers the direct use of diffusion models for extracting EEG signal representations, opening up a new avenue for research in neurological signal processing.
+1. First Application of Diffusion Models for Direct EEG Representation Extraction: This work pioneers the direct use of diffusion models for extracting EEG signal representations, opening up a new avenue for research in neurological signal processing.
 
-• Time-Domain Gaussian Noise for Self-Supervision: EEG-Diff empirically demonstrates that adding Gaussian noise directly in the time domain can effectively achieve self-supervised representation learning, providing a promising alternative to existing methodologies.
+2. Time-Domain Gaussian Noise for Self-Supervision: EEG-Diff empirically demonstrates that adding Gaussian noise directly in the time domain can effectively achieve self-supervised representation learning, providing a promising alternative to existing methodologies.
 
-• Competitive Performance with Compact Design: The proposed method achieves performance exceeding previous domain-specific models and matches large EEG Foundation Models, despite using significantly less training data and a smaller model size.
+3. Competitive Performance with Compact Design: The proposed method achieves performance exceeding previous domain-specific models and matches large EEG Foundation Models, despite using significantly less training data and a smaller model size.
 
 ## 😮 Hightlights
 
