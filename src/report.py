@@ -7,11 +7,14 @@ from dataloader.TUEVDataset import TUEVDataset
 from pyhealth.metrics.multiclass import multiclass_metrics_fn
 from hydra.utils import instantiate
 from sklearn import metrics
+import gc
 
 # TODO figure out how to distribute without repeated data
 def entry(config):
+    checkpoint = config["checkpoint"]
+    if isinstance(checkpoint, str): checkpoint = [checkpoint]
     pl_cls=[None, PLClassifier, PLClassifier_v2][config.get("pl_cls_version", 1)]
-    model = pl_cls.load_from_checkpoint(config["checkpoint"], map_location=config["device"])
+    
     dataset = TUEVDataset(
         config["data_dir"],
         schema=instantiate(config["schema"])
@@ -24,21 +27,35 @@ def entry(config):
     )
 
     data_count = len(dataset)
-    y_true = np.zeros((data_count))
-    y_prob = np.zeros((data_count, config["n_class"]))
 
-    _idx = 0
-    with torch.no_grad():
-        for batch_input in tqdm(dataloader, total=data_count // config["batch_size"] + 1):
-            batch_input = model.transfer_batch_to_device(batch_input, config["device"], 0)
+    all_result = []
 
-            _, pred, _ = model.get_loss_pred_label(batch_input, use_ema=True, data_is_cached=False)
+    for c in tqdm(checkpoint):
+        model = pl_cls.load_from_checkpoint(c, map_location=config["device"])
+        y_true = np.zeros((data_count))
+        y_prob = np.zeros((data_count, config["n_class"]))
 
-            _bs = pred.shape[0]
-            y_true[_idx: _idx + _bs] = batch_input[1].flatten().cpu().numpy()
-            y_prob[_idx: _idx + _bs, :] = torch.nn.functional.softmax(pred, dim=-1).cpu().numpy()
-            _idx += _bs
-    
-    print(multiclass_metrics_fn(y_true, y_prob, metrics=config["metrics"]))
+        _idx = 0
+        with torch.no_grad():
+            for batch_input in tqdm(dataloader, total=data_count // config["batch_size"] + 1):
+                batch_input = model.transfer_batch_to_device(batch_input, config["device"], 0)
 
-    print(metrics.confusion_matrix(y_true, y_prob.argmax(axis=1)))
+                _, pred, _ = model.get_loss_pred_label(batch_input, use_ema=True, data_is_cached=False)
+
+                _bs = pred.shape[0]
+                y_true[_idx: _idx + _bs] = batch_input[1].flatten().cpu().numpy()
+                y_prob[_idx: _idx + _bs, :] = torch.nn.functional.softmax(pred, dim=-1).cpu().numpy()
+                _idx += _bs
+
+        result = multiclass_metrics_fn(y_true, y_prob, metrics=config["metrics"])
+        all_result.append(result)
+        
+        print(metrics.confusion_matrix(y_true, y_prob.argmax(axis=1)))
+        
+        del model, y_true, y_prob
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    for m in config["metrics"]:
+        arr = np.array(list(map(lambda r: r[m], all_result))) * 100
+        print(m, round(arr.mean().item(), 2), round(arr.std().item(), 2))

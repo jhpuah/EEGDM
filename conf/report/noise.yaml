@@ -1,8 +1,16 @@
 
 # checkpoint: "/media/D3/tester/reresearch/_plt/propertest/finetune/test.ckpt"
-checkpoint: "./checkpoint/finetune/base_finals/classifier.ckpt"
+checkpoint: 
+  - "./checkpoint/finetune/noise/classifier-v5.ckpt"
+  - "./checkpoint/finetune/noise/classifier-v6.ckpt"
+  - "./checkpoint/finetune/noise/classifier-v7.ckpt"
+  - "./checkpoint/finetune/noise/classifier-v8.ckpt"
+  - "./checkpoint/finetune/noise/classifier-v9.ckpt"
+
 device: "cuda:7"
 data_dir: "./data/faithful/test"
+
+pl_cls_version: 2
 
 schema:
   - _target_: dataloader.TUEVDataset.TUEVDataField

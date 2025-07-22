@@ -1,8 +1,16 @@
 
 # checkpoint: "/media/D3/tester/reresearch/_plt/propertest/finetune/test.ckpt"
-checkpoint: "./checkpoint/finetune/base/classifier.ckpt"
-device: "cuda:5"
-data_dir: "/media/D3/tester/labram/LaBraM/dataset/TUEV/edf/processed_eval"
+checkpoint: 
+  - "./checkpoint/finetune/base_t2/classifier.ckpt"
+  - "./checkpoint/finetune/base_t2/classifier-v1.ckpt"
+  - "./checkpoint/finetune/base_t2/classifier-v2.ckpt"
+  - "./checkpoint/finetune/base_t2/classifier-v3.ckpt"
+  - "./checkpoint/finetune/base_t2/classifier-v4.ckpt"
+
+device: "cuda:7"
+data_dir: "./data/faithful/test"
+
+pl_cls_version: 2
 
 schema:
   - _target_: dataloader.TUEVDataset.TUEVDataField
@@ -11,7 +19,7 @@ schema:
       - _target_: src.util.dynamic_load
         item: torch.float
       - _target_: src.util.dynamic_load
-        item: src.util.div_100_staged_mu_law
+        item: src.util.staged_mu_law
   - _target_: dataloader.TUEVDataset.TUEVDataField
     _args_:
       - "label"
