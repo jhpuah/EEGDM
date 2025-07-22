@@ -10,24 +10,13 @@
       alt="MMaDA Paper on arXiv"
     />
   </a>
-  <a href="https://huggingface.co/spaces/Gen-Verse/MMaDA">
-    <img 
-        src="https://img.shields.io/badge/MMaDA%20Demo-Hugging%20Face%20Space-blue?logo=huggingface&logoColor=blue" 
-        alt="MMaDA on Hugging Face"
-    />
-  </a>
   <a href="https://huggingface.co/Gen-Verse/MMaDA-8B-Base">
     <img 
         src="https://img.shields.io/badge/MMaDA--8B--Base-Hugging%20Face%20Model-orange?logo=huggingface&logoColor=yellow" 
         alt="MMaDA on Hugging Face"
     />
   </a>
-    <a href="https://huggingface.co/Gen-Verse/MMaDA-8B-MixCoT">
-    <img 
-        src="https://img.shields.io/badge/MMaDA--8B--MixCoT-Hugging%20Face%20Model-orange?logo=huggingface&logoColor=yellow" 
-        alt="MMaDA on Hugging Face"
-    />
-  </a>
+
 
   
 </p>
@@ -57,7 +46,17 @@ EEGDM is a novel EEG diffusion model designed for generating realistic EEG signa
 
 <div align="center">
 <br>
-<img src="mainImage2.png" width="366">
+<img src="mainImage2.png" width="666">
+</div>
+
+<div align="center">
+<br>
+<img src="mainImage3.png" width="666">
+</div>
+
+<div align="center">
+<br>
+<img src="mainImage4.png" width="666">
 </div>
 
 ## 📰 Latest Updates
@@ -82,7 +81,7 @@ pip install -r requirements.txt
 
 **Preprocessing:**
 ```bash
-python main.py preprocessing=faithful
+python main.py preprocessing=pretrain
 ```
 Refering to preprocessing of LaBraM
 
