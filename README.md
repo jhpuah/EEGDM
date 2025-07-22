@@ -43,7 +43,7 @@ EEG-Diff is distinguished by three key innovations:
 
 • This work is one of the first (if not the first) to use diffusion models directly in the extraction of EEG signal representations, thus opening a new research direction.  
 • This work empirically shows that self-supervised representation learning can be achieved through adding Gaussian noise in the time domain directly, offering apromising alternative to the tokenization-then-masking method.  
-• The proposed method achieved performance exceeding previous domain-specific models, and matches large EEG 2 FMs despite the disadvantages in training data size and model size.  
+• The proposed method achieved performance exceeding previous domain-specific models, and matches large EEG FMs despite the disadvantages in training data size and model size.  
 
 ## Main result
 
