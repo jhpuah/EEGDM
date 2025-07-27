@@ -23,7 +23,17 @@
 
 <div align="center">
 <br>
-<img src="mainImage.png" width="166">
+<img src="diff_v0.png" width="1066">
+</div>
+
+<div align="center">
+<br>
+<img src="pool_v0.png" width="1066">
+</div>
+
+<div align="center">
+<br>
+<img src="cls_v0.png" width="1066">
 </div>
 
 
