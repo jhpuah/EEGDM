@@ -1,6 +1,6 @@
 <div align="center">
 <br>
-<img src="title.png" width="166">
+<img src="assets/title.png" width="166">
 <h3>EEG Diffusion Model</h3></div>
 
 <p align="center">
@@ -23,17 +23,17 @@
 
 <div align="center">
 <br>
-<img src="diff_v0.png" width="1066">
+<img src="assets/diff_v0.png" width="1066">
 </div>
 
 <div align="center">
 <br>
-<img src="pool_v0.png" width="1066">
+<img src="assets/pool_v0.png" width="1066">
 </div>
 
 <div align="center">
 <br>
-<img src="cls_v0.png" width="1066">
+<img src="assets/cls_v0.png" width="1066">
 </div>
 
 
@@ -59,22 +59,22 @@ EEG-Diff is distinguished by three key innovations:
 
 <div align="center">
 <br>
-<img src="mainImage1.png" width="466">
+<img src="assets/mainImage1.png" width="466">
 </div>
 
 <div align="center">
 <br>
-<img src="mainImage2.png" width="566">
+<img src="assets/mainImage2.png" width="566">
 </div>
 
 <div align="center">
 <br>
-<img src="mainImage3.png" width="566">
+<img src="assets/mainImage3.png" width="566">
 </div>
 
 <div align="center">
 <br>
-<img src="mainImage4.png" width="566">
+<img src="assets/mainImage4.png" width="566">
 </div>
 
 ## 📰 Latest Updates
