@@ -59,7 +59,7 @@ class WavenetBlock(nn.Module):
             self.linear_next = nn.Linear(d_model, d_model)
         self.linear_skip = nn.Linear(d_model, d_model)
 
-    def forward(self, x, c, lc, query: Literal["gate", "filter", "inter"] | list = None, skip_skip=False):
+    def forward(self, x, c, lc, query: Literal["gate", "filter", "inter"] | list = None, skip_skip=False, rate=1):
         assert x.shape[-1] == self.d_model
                 
         skip = x
@@ -69,7 +69,7 @@ class WavenetBlock(nn.Module):
         x = self.prenorm1(x)
         x = x + cond_bias
         x = self.pre_layer(x)
-        x, _ = self.layer(x)
+        x, _ = self.layer(x, rate=rate)
         
         if lc is not None: # B 1 F W
             lc = self.local_cond_conv(lc)

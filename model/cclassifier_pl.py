@@ -243,7 +243,8 @@ class PLClassifier(pl.LightningModule):
         self.log_dict(self.test_metrics.compute(), sync_dist=True, prog_bar=True)
         self.test_metrics.reset()
 
-    def get_loss_pred_label(self, batch_input, use_ema=False, data_is_cached=False):
+    def get_loss_pred_label(self, batch_input, use_ema=False, data_is_cached=False, rate=1):
+        assert rate == 1 or not data_is_cached
         model = self.ema if use_ema else self.model
         batch = batch_input[0]
         label = batch_input[1].view(-1)
@@ -251,7 +252,7 @@ class PLClassifier(pl.LightningModule):
 
         if not data_is_cached:
             noisy_signal = self.forward_sample(batch, force_zero_noise=use_ema)
-            pred = model((noisy_signal, local_cond), data_is_cached=data_is_cached)
+            pred = model((noisy_signal, local_cond), data_is_cached=data_is_cached, rate=rate)
         else:
             pred = model(batch, data_is_cached=data_is_cached)
 

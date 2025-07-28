@@ -42,7 +42,7 @@ class LatentActivityExtractor(nn.Module):
         self.diffusion_steps = nn.Buffer(torch.full((self.C, 1), diffusion_t, dtype=torch.long))
 
     @torch.no_grad()
-    def forward(self, input, is_caching=None):
+    def forward(self, input, is_caching=None, rate=1):
         if is_caching:
             query = ["inter", "gate", "filter"]
             start = 0
@@ -75,7 +75,7 @@ class LatentActivityExtractor(nn.Module):
         for i, l in enumerate(self.model.layers):
             if i == end:
                 break
-            x, _, query_result = l(x, cond, local_cond, query=query, skip_skip=True)
+            x, _, query_result = l(x, cond, local_cond, query=query, skip_skip=True, rate=rate)
             #     [(B C) (p l) H] x q
             if i >= start:
                 tokens = torch.stack(query_result, dim=1) # (B C) q (p l) H
@@ -208,8 +208,9 @@ class LatentActivityReducer(nn.Module):
         self.d_kv_embed_factor = d_kv_embed_factor
 
     @torch.no_grad()
-    def forward(self, input):
-        assert input.shape[4] == self.L
+    def forward(self, input, rate=1):
+        if rate != 1: assert (_l := self.L * rate).is_integer() and input.shape[4] == _l
+        # assert input.shape[4] == self.L
         all_tokens = input.unfold(dimension=4, size=self.window_size, step=self.window_step)
         # B C n q p H l
         # 0 1 2 3 4 5 6
@@ -822,11 +823,12 @@ class Classifier(nn.Module):
             n_class=n_class,
         )
     
-    def forward(self, input, data_is_cached=False):
+    def forward(self, input, data_is_cached=False, rate=1):
         if not data_is_cached:
-            latent_activity = self.extractor(input)
+            latent_activity = self.extractor(input, rate=rate)
             tokens = self.reducer(latent_activity)
         else: 
+            assert rate == 1
             tokens = input
         rep = self.decoder(tokens)[self.use_rep_idx]
         cls = self.classifier(rep)

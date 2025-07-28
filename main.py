@@ -12,6 +12,7 @@ def main(config: DictConfig):
     cache_config = config.get("cache", None)
     finetune_config = config.get("finetune", None)
     report_config = config.get("report", None)
+    aux_config = config.get("aux", None)
 
     if preprocessing_config is not None:
         print("Enter preprocessing")
@@ -33,6 +34,8 @@ def main(config: DictConfig):
         print("Enter reporting")
         report.entry(report_config)
 
+    if aux_config is not None:
+        hydra.utils.instantiate(aux_config["target"])(aux_config) # horrible
 # --config-name=file
 
 

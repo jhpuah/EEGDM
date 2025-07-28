@@ -13,7 +13,7 @@ trainer:
   devices: [0, 1, 2, 3, 4, 5, 6, 7]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "base_t0"
+      name: "base_firsthalf"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
@@ -23,7 +23,7 @@ trainer:
       mode: "max"
       save_top_k: 1
       every_n_epochs: 1
-      dirpath: "./checkpoint/finetune/base_t0/"
+      dirpath: "./checkpoint/finetune/base_firsthalf/"
       filename: "classifier"
       save_last: True
     - _target_: src.util.EarlyStoppingWithWarmup
@@ -58,8 +58,8 @@ model:
   diffusion_model_checkpoint: "./checkpoint/pretrain/backbone.ckpt"
   model_kwargs:
     start: 0
-    end: null
-    diffusion_t: 0
+    end: 10
+    diffusion_t: 1
 
     query: ["gate"] # inter, gate, filter
     reduce: ["std"] # mean, std
@@ -96,7 +96,7 @@ model:
     classifier_use_ap_clst: False
     classifier_have_pos_embed: True
     classifier_pos_embed_dim: "TPN" # TPN or TA
-    classifier_stack_struct: "sfsfsfsfsfsfsfsf"
+    classifier_stack_struct: "sfsfsfsfsfsfsfsfsfsfsfsfsfsfsfsfsfsfsfsfsfsf"
     classifier_final_act: "pool" # cat, pool, cls
     n_class: 6
 
@@ -135,7 +135,7 @@ model:
 
 data:
   _target_: builtins.dict
-  root: "./data/cached/base_t0"
+  root: "./data/cached/faithful"
   train_dir: "train"
   val_dir: "val"
   test_dir: "test"

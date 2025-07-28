@@ -4,3 +4,4 @@ defaults:
   - cache: null
   - finetune: null
   - report: null
+  - aux: null
