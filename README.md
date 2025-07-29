@@ -132,10 +132,15 @@ python main.py report=base
 ```
 
 **Other**
+
 Scripts of certain ablation experiments are put in src/aux
+
 ```bash
+python main.py aux=reduce_sampling
 python main.py aux=no_fusion aux.rng_seeding.seed=0
+python main.py aux=report_no_fusion
 python main.py aux=mean_fusion aux.rng_seeding.seed=0
+python main.py aux=report_mean_fusion
 ```
 All seeds need to be iterated from 0 to 4
 
