@@ -131,6 +131,14 @@ All seeds need to be iterated from 0 to 4
 python main.py report=base
 ```
 
+**Other**
+Scripts of certain ablation experiments are put in src/aux
+```bash
+python main.py aux=no_fusion aux.rng_seeding.seed=0
+python main.py aux=mean_fusion aux.rng_seeding.seed=0
+```
+All seeds need to be iterated from 0 to 4
+
 ## 📖 Citation
 
 If you use this work, please cite:
