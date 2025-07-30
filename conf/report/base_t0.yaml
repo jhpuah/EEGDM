@@ -1,13 +1,13 @@
 
 # checkpoint: "/media/D3/tester/reresearch/_plt/propertest/finetune/test.ckpt"
 checkpoint: 
-  - "./checkpoint/finetune/base_firstquarter/classifier.ckpt"
-  - "./checkpoint/finetune/base_firstquarter/classifier-v1.ckpt"
-  - "./checkpoint/finetune/base_firstquarter/classifier-v2.ckpt"
-  - "./checkpoint/finetune/base_firstquarter/classifier-v3.ckpt"
-  - "./checkpoint/finetune/base_firstquarter/classifier-v4.ckpt"
+  - "./checkpoint/finetune/base_t0/classifier.ckpt"
+  - "./checkpoint/finetune/base_t0/classifier-v1.ckpt"
+  - "./checkpoint/finetune/base_t0/classifier-v2.ckpt"
+  - "./checkpoint/finetune/base_t0/classifier-v3.ckpt"
+  - "./checkpoint/finetune/base_t0/classifier-v4.ckpt"
 
-device: "cuda:5"
+device: "cuda:3"
 data_dir: "./data/faithful/test"
 
 pl_cls_version: 2

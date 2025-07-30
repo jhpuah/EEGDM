@@ -7,7 +7,7 @@ checkpoint:
   - "./checkpoint/finetune/base_secondquarter/classifier-v3.ckpt"
   - "./checkpoint/finetune/base_secondquarter/classifier-v4.ckpt"
 
-device: "cuda:6"
+device: "cuda:4"
 data_dir: "./data/faithful/test"
 
 pl_cls_version: 2

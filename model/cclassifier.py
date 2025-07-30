@@ -43,7 +43,7 @@ class LatentActivityExtractor(nn.Module):
 
     @torch.no_grad()
     def forward(self, input, is_caching=None, rate=1):
-        if is_caching:
+        if False and is_caching:
             query = ["inter", "gate", "filter"]
             start = 0
             end = len(self.model.layers)
@@ -87,16 +87,16 @@ class LatentActivityExtractor(nn.Module):
         latent_activities = rearrange(latent_activities, "(B C) ... -> B C ...", C = self.C)
         return latent_activities
 
-    def do_cache(self, input):
-        return self(input, is_caching=True)
+    # def do_cache(self, input):
+    #     return self(input, is_caching=True)
 
-    def from_cache(self, cached_input):
-        idx = torch.tensor(
-            [["inter", "gate", "filter"].index(q) for q in self.query],
-            dtype=torch.long,
-            device=cached_input.device
-        )
-        return cached_input[:, :, :, idx, :, :]
+    # def from_cache(self, cached_input):
+    #     idx = torch.tensor(
+    #         [["inter", "gate", "filter"].index(q) for q in self.query],
+    #         dtype=torch.long,
+    #         device=cached_input.device
+    #     )
+    #     return cached_input[:, :, :, idx, :, :]
 
 class LatentActivityReducer(nn.Module):
     def __init__(
@@ -829,13 +829,13 @@ class Classifier(nn.Module):
             tokens = self.reducer(latent_activity)
         else: 
             assert rate == 1
-            tokens = input
+            tokens = input[:, self.extractor.start: self.extractor.end, :, :, :, :, :]
         rep = self.decoder(tokens)[self.use_rep_idx]
         cls = self.classifier(rep)
         return cls
 
-    def cache_la(self, input):
-        return self.extractor.do_cache(input)
+    # def cache_la(self, input):
+    #     return self.extractor.do_cache(input)
     
     def get_param_depth_by_name(self, name: str):
         if name.startswith("decoder.tower."):
