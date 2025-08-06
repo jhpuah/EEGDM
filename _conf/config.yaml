@@ -1,6 +1,0 @@
-defaults:
-  - preprocessing: null
-  - pretrain: null
-  - cache: null
-  - finetune: null
-  - report: null

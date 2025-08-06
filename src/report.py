@@ -1,8 +1,7 @@
 import torch
 import numpy as np
 from tqdm import tqdm
-from model.classifier_pl import PLClassifier
-from model.cclassifier_pl import PLClassifier as PLClassifier_v2
+from model.classifier_pl import PLClassifier as PLClassifier_v2
 from dataloader.TUEVDataset import TUEVDataset
 from pyhealth.metrics.multiclass import multiclass_metrics_fn
 from hydra.utils import instantiate
@@ -13,7 +12,7 @@ import gc
 def entry(config):
     checkpoint = config["checkpoint"]
     if isinstance(checkpoint, str): checkpoint = [checkpoint]
-    pl_cls=[None, PLClassifier, PLClassifier_v2][config.get("pl_cls_version", 1)]
+    pl_cls=[None, None, PLClassifier_v2][config.get("pl_cls_version", 1)]
     
     dataset = TUEVDataset(
         config["data_dir"],

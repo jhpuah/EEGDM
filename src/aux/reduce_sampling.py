@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 from model.classifier_pl import PLClassifier
-from model.cclassifier_pl import PLClassifier as PLClassifier_v2
+from model.classifier_pl import PLClassifier as PLClassifier_v2
 from dataloader.TUEVDataset import TUEVDataset
 from pyhealth.metrics.multiclass import multiclass_metrics_fn
 from hydra.utils import instantiate

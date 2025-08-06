@@ -2,8 +2,7 @@ import torch
 import lightning.pytorch as pl
 import torch.utils
 import torch.utils.data
-from model.classifier_pl import PLClassifier
-from model.cclassifier_pl import PLClassifier as PLClassifier_v2
+from model.classifier_pl import PLClassifier as PLClassifier_v2
 from dataloader.TUEVDataset import TUEVDataset
 import os
 from omegaconf import DictConfig
@@ -37,7 +36,7 @@ def entry(config: DictConfig):
         assert metadata.keys() == metadata_provided.keys()
         for k in metadata_provided.keys(): assert metadata[k] == metadata_provided[k]
 
-    pl_cls = [None, PLClassifier, PLClassifier_v2][config.get("pl_cls_version", 1)]
+    pl_cls = [None, None, PLClassifier_v2][config.get("pl_cls_version", 1)]
     model = pl_cls(
         diffusion_model_checkpoint=config["model"]["diffusion_model_checkpoint"],
         model_kwargs=config["model"]["model_kwargs"],

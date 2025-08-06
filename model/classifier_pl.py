@@ -2,10 +2,6 @@ import torch
 import torch.nn.functional as F
 import lightning.pytorch as pl
 from .classifier import Classifier as Classifier_v1
-from .classifier_v2 import Classifier as Classifier_v2
-from .classifier_v3 import Classifier as Classifier_v3
-from .classifier_v4_lrs import Classifier as Classifier_v4
-from .classifier_v5_lrscatpos import Classifier as Classifier_v5
 from .diffusion_model import Wavenet
 from .diffusion_model_pl import PLDiffusionModel
 from diffusers import DDPMScheduler
@@ -58,14 +54,13 @@ class PLClassifier(pl.LightningModule):
 
         # print(self.hparams)
 
-        Classifier = [None, Classifier_v1, Classifier_v2, Classifier_v3, Classifier_v4, Classifier_v5][cls_version]
+        Classifier = [None, Classifier_v1][cls_version]
 
         diffusion_model: PLDiffusionModel = PLDiffusionModel.load_from_checkpoint(diffusion_model_checkpoint, map_location=self.device)
         self.model = Classifier(model=diffusion_model.ema.ema_model, **model_kwargs)
-        self.model.model.eval()
         self.ema = EMA(
             self.model,
-            ignore_startswith_names={"model"}, # ignore the diffusion backbone model in EMA
+            ignore_startswith_names={"extractor", "reducer"}, # ignore the diffusion backbone model in EMA
             **ema_kwargs
         )
         self.noise_sch = diffusion_model.noise_sch
@@ -109,6 +104,7 @@ class PLClassifier(pl.LightningModule):
                             return False
                     return True
 
+                # assert "lr_decay" not in self.hparams["lrd_kwargs"]
                 lr_decay_groups = self.hparams["lrd_kwargs"].get("lr_decay", [1])
                 lr_decay_rate = lr_decay_groups[0]
                 lr_decay_groups = lr_decay_groups[1:]
@@ -247,7 +243,8 @@ class PLClassifier(pl.LightningModule):
         self.log_dict(self.test_metrics.compute(), sync_dist=True, prog_bar=True)
         self.test_metrics.reset()
 
-    def get_loss_pred_label(self, batch_input, use_ema=False, data_is_cached=False):
+    def get_loss_pred_label(self, batch_input, use_ema=False, data_is_cached=False, rate=1):
+        assert rate == 1 or not data_is_cached
         model = self.ema if use_ema else self.model
         batch = batch_input[0]
         label = batch_input[1].view(-1)
@@ -255,7 +252,7 @@ class PLClassifier(pl.LightningModule):
 
         if not data_is_cached:
             noisy_signal = self.forward_sample(batch, force_zero_noise=use_ema)
-            pred = model((noisy_signal, local_cond), data_is_cached=data_is_cached)
+            pred = model((noisy_signal, local_cond), data_is_cached=data_is_cached, rate=rate)
         else:
             pred = model(batch, data_is_cached=data_is_cached)
 

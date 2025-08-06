@@ -1,7 +1,6 @@
 data
 checkpoint
 _checkpoint
-_conf
 gen
 lightning_logs
 log

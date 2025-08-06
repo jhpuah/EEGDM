@@ -1,7 +1,7 @@
 import torch
 from dataloader.TUEVDataset import TUEVDataset
 from hydra.utils import instantiate
-from model.cclassifier import LatentActivityExtractor, LatentActivityReducer
+from model.classifier import LatentActivityExtractor, LatentActivityReducer
 from model.diffusion_model_pl import PLDiffusionModel
 import os
 from tqdm import tqdm
