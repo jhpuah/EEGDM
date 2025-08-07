@@ -1,3 +1,5 @@
+# A dummy config file that does nothing
+
 defaults:
   - preprocessing: null
   - pretrain: null

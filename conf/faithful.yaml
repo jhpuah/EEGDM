@@ -1,6 +1,0 @@
-defaults:
-  - preprocessing: faithful
-  - pretrain: base
-  - finetune: base
-  - report: base
-

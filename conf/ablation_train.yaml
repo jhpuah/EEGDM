@@ -1,6 +1,0 @@
-defaults:
-  - preprocessing: deduplicated
-  - pretrain: base
-  - finetune: base
-  - report: null
-

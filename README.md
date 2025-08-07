@@ -83,48 +83,101 @@ EEG-Diff is distinguished by three key innovations:
 
 ## ⚙️ Quick Start
 
-First, set up the environment:
+First, set up the environment with Conda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 
 ```bash
-conda create -n proper python=3.11
-conda activate proper
-pip install numpy==1.26.4 hydra-core mne torch torchvision torchaudio lightning pyhealth ema-pytorch diffusers einops wandb scipy pyhealth
-```
-or
-```bash
+conda create -n eegdm python=3.11
+conda activate eegdm
 pip install -r requirements.txt
 ```
+The `requirement.txt` file is exported directly from our research environment (NVIDIA GeForce RTX 4090, CUDA Version: 12.4), if your hardware is incompatible, do the following instead:
+
+1. Install torch following the official guide: https://pytorch.org/get-started/locally/
+
+2. Run:
+```bash
+pip install numpy==1.26.4 hydra-core mne lightning pyhealth ema-pytorch diffusers einops wandb scipy
+```
+
+We use Weight and Bias (https://wandb.ai/site/) for logging, and you will need an account for that. If this is undesired, replace instance of `WandbLogger` to your own logger, check Pytorch Lightning documentation for alternative: https://lightning.ai/docs/pytorch/stable/extensions/logging.html 
+
+
 
 ### Usage Examples:
 
-**Preprocessing:**
 ```bash
-python main.py preprocessing=pretrain
+python main.py [preprocessing=?] [pretrain=?] [cache=?] [finetune=?] [report=?] [aux=?]
 ```
-Refering to preprocessing of LaBraM
+Replace "?" with config file name (without extenaion).
+The file must be put inside "conf", under the directory with the same name.
 
-**Pre-training:**
+e.g.
 ```bash
 python main.py pretrain=base
 ```
+Run pretraining with config specified in `conf/pretrain/base.yaml`.
+
+You can override config in command line, 
+see Hydra documentation (https://hydra.cc/docs/intro/). E.g. 
+```bash
+python main.py finetune=base finetune.rng_seeding.seed=10
+```
+Run pretraining with config specified in `conf/finetune/base.yaml`, and set the rng seed to 10.
+
+
+`aux` config is special: the `main()` will load a function specified in its "target" field
+and pass the config to that function. This is a quick and dirty way to add experiemnts that does not fit well to the established workflow.
+
+
+### Experiments:
+**Preprocessing:**
+
+
+We follow the general preprocessing logic of LaBraM: https://github.com/935963004/LaBraM/blob/main/dataset_maker/make_TUEV.py
+
+To produce single-channel EEG signal for diffusion model pretraining, run:
+```bash
+python main.py preprocessing=pretrain
+```
+
+To produce signal for finetuning, run:
+```bash
+python main.py preprocessing=faithful
+```
+
+**Pre-training:**
+
+```bash
+python main.py pretrain=?
+```
+Where `?` is `base`, `linear` or `nolaw`.
+
+`base` uses cosine noise scheduler and perform mu-law based extreme value suppression. `linear` uses linear noise scheduler, and `nolaw` does not perform value suppression.
 
 **Caching:**
+
+If noise injection is disabled, the latent tokens can be cached to avoid repeated computation.
+
+The test data is untouched during caching.
+
+See `conf/cache` for available options.
 ```bash
-python main.py cache=base_t2
+python main.py cache=base
 ```
 
 **Fine-tuning:**
+
+<!-- Use `finetune.data_is_cached=<boolean>` to tell  -->
+
+If data is cached, the code will check metadata to ensure that it is consistent with the model hyperparameter.
+
+See `conf/finetune` for available options.
+
+In our experiment, `finetune.rng_seeding.seed` is set to 0, 1, 2, 3 and 4 to produce 5 checkpoints
+
 ```bash
 python main.py finetune=base finetune.rng_seeding.seed=0
-python main.py finetune=base_gatem finetune.rng_seeding.seed=0
-python main.py finetune=base_filters finetune.rng_seeding.seed=0
-python main.py finetune=base_filterm finetune.rng_seeding.seed=0
-python main.py finetune=linear finetune.rng_seeding.seed=0
-python main.py finetune=base_t2 finetune.rng_seeding.seed=0
-python main.py finetune=nolaw finetune.rng_seeding.seed=0
-python main.py finetune=noise finetune.rng_seeding.seed=0
 ```
-All seeds need to be iterated from 0 to 4
 
 **Reporting:**
 ```bash
@@ -133,8 +186,7 @@ python main.py report=base
 
 **Other**
 
-Scripts of certain ablation experiments are put in src/aux
-
+Scripts of certain ablation experiments are put in `src/aux`:
 ```bash
 python main.py aux=reduce_sampling
 python main.py aux=no_fusion aux.rng_seeding.seed=0
