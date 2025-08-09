@@ -11,6 +11,8 @@ import shutil
 @torch.no_grad()
 def entry(config):
     # raise NotImplementedError()
+    assert config["fwd_with_noise"] in [None, False]
+
     cache_config = config["cache"]    
     data_config = instantiate(config["data"])
     reduce_config = config["reduce"]
@@ -50,6 +52,9 @@ def entry(config):
         local = batch_input[2].to(device=device) if len(batch_input) > 3 else None
         index = batch_input[-1].to(device=device)
 
+        if config["fwd_with_noise"] is False:
+            times = torch.zeros(batch.shape[0], 1, dtype=torch.long).to(device=device) + config["diffusion_t"]
+            batch = diffusion_model.forward_sample(batch=batch, times=times, noiseless=True)[0]
         computed = model((batch, local))
         for c, l, i in zip(computed, label, index):
             filename = os.path.basename(train_loader.dataset.files[i.item()])
@@ -78,6 +83,9 @@ def entry(config):
         local = batch_input[2].to(device=device) if len(batch_input) > 3 else None
         index = batch_input[-1].to(device=device)
 
+        if config["fwd_with_noise"] is False:
+            times = torch.zeros(batch.shape[0], 1, dtype=torch.long).to(device=device) + config["diffusion_t"]
+            batch = diffusion_model.forward_sample(batch=batch, times=times, noiseless=True)[0]
         computed = model((batch, local))
         for c, l, i in zip(computed, label, index):
             filename = os.path.basename(train_loader.dataset.files[i.item()])
@@ -89,6 +97,7 @@ def entry(config):
     metadata = {
         "diffusion_model_checkpoint": diffusion_model_checkpoint,
         "diffusion_t": config["diffusion_t"],
+        "fwd_with_noise": config["fwd_with_noise"],
         **reduce_config
     }
 

@@ -21,6 +21,7 @@ def entry(config: DictConfig):
         metadata_provided = {
             "diffusion_model_checkpoint": config["model"]["diffusion_model_checkpoint"],
             "diffusion_t": config["model"]["model_kwargs"]["diffusion_t"],
+            "fwd_with_noise": config["model"]["fwd_with_noise"],
             "query": config["model"]["model_kwargs"]["query"],
             "reduce": config["model"]["model_kwargs"]["reduce"],
             "rescale": config["model"]["model_kwargs"]["rescale"],

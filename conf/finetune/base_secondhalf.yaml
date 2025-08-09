@@ -120,7 +120,7 @@ model:
     label_smoothing: 0.1
     gamma: 0
 
-  fwd_with_noise: False
+  fwd_with_noise: null
   run_test_together: False
   cls_version: 1
   lrd_kwargs:

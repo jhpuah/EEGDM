@@ -141,9 +141,9 @@ class PLDiffusionModel(pl.LightningModule):
             kld = gen_logprob - target_logprob # math
             self.log("test/KLD", kld.mean().item())
         
-    def forward_sample(self, batch, times=None):
+    def forward_sample(self, batch, times=None, noiseless=False):
         bs = batch.shape[0]
-        noise = torch.randn_like(batch)
+        noise = torch.randn_like(batch) if not noiseless else torch.zeros_like(batch)
         if times is None:
             times = torch.randint(0, self.hparams["noise_sch_kwargs"]["num_train_timesteps"], (bs, 1), device=batch.device)
 

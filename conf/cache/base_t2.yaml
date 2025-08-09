@@ -1,6 +1,7 @@
 diffusion_model_checkpoint: "./checkpoint/pretrain/backbone.ckpt"
 diffusion_t: 2
-device: "cuda:6"
+fwd_with_noise: False
+device: "cuda:5"
 
 cache:
   root: "./data/cached/base_t2/"

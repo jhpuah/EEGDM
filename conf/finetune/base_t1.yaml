@@ -13,7 +13,7 @@ trainer:
   devices: [0, 1, 2, 3, 4, 5, 6, 7]
   logger: 
     - _target_: lightning.pytorch.loggers.wandb.WandbLogger
-      name: "nolaw"
+      name: "base_t0"
       project: "proper_finetuning"
       save_dir: "./log/"
   default_root_dir: "./checkpoint"
@@ -23,7 +23,7 @@ trainer:
       mode: "max"
       save_top_k: 1
       every_n_epochs: 1
-      dirpath: "./checkpoint/finetune/nolaw/"
+      dirpath: "./checkpoint/finetune/base_t0/"
       filename: "classifier"
       save_last: True
     - _target_: src.util.EarlyStoppingWithWarmup
@@ -55,7 +55,7 @@ trainer:
 
 
 model:
-  diffusion_model_checkpoint: "./checkpoint/pretrain/nolaw.ckpt"
+  diffusion_model_checkpoint: "./checkpoint/pretrain/backbone.ckpt"
   model_kwargs:
     start: 0
     end: null
@@ -120,7 +120,7 @@ model:
     label_smoothing: 0.1
     gamma: 0
 
-  fwd_with_noise: null
+  fwd_with_noise: False
   run_test_together: False
   cls_version: 1
   lrd_kwargs:
@@ -135,7 +135,7 @@ model:
 
 data:
   _target_: builtins.dict
-  root: "./data/cached/nolaw"
+  root: "./data/cached/base_t1"
   train_dir: "train"
   val_dir: "val"
   test_dir: "test"
@@ -159,8 +159,8 @@ data:
         - "signal"
         - _target_: src.util.dynamic_load
           item: torch.float
-        # - _target_: src.util.dynamic_load
-        #   item: src.util.staged_mu_law
+        - _target_: src.util.dynamic_load
+          item: src.util.staged_mu_law
     - _target_: dataloader.TUEVDataset.TUEVDataField
       _args_:
         - "label"

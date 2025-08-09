@@ -1,10 +1,10 @@
-diffusion_model_checkpoint: "./checkpoint/pretrain/nolaw.ckpt"
+diffusion_model_checkpoint: "./checkpoint/pretrain/backbone.ckpt"
 diffusion_t: 1
-fwd_with_noise: null
-device: "cuda:2"
+fwd_with_noise: False
+device: "cuda:6"
 
 cache:
-  root: "./data/cached/nolaw/"
+  root: "./data/cached/base_t1/"
 
 reduce:
   query: ["gate"] # inter, gate, filter
@@ -30,8 +30,8 @@ data:
         - "signal"
         - _target_: src.util.dynamic_load
           item: torch.float
-        # - _target_: src.util.dynamic_load
-        #   item: src.util.staged_mu_law
+        - _target_: src.util.dynamic_load
+          item: src.util.staged_mu_law
     - _target_: dataloader.TUEVDataset.TUEVDataField
       _args_:
         - "label"

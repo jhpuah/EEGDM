@@ -1,6 +1,7 @@
 diffusion_model_checkpoint: "./checkpoint/pretrain/linear.ckpt"
 diffusion_t: 1
-device: "cuda:7"
+fwd_with_noise: null
+device: "cuda:1"
 
 cache:
   root: "./data/cached/linear/"

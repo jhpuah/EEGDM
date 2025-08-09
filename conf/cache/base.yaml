@@ -1,5 +1,6 @@
 diffusion_model_checkpoint: "./checkpoint/pretrain/backbone.ckpt"
 diffusion_t: 1
+fwd_with_noise: null
 device: "cuda:0"
 
 cache:
