@@ -131,7 +131,7 @@ We use Weight and Bias (https://wandb.ai/site/) for logging, and you will need a
 ```bash
 python main.py [preprocessing=?] [pretrain=?] [cache=?] [finetune=?] [report=?] [aux=?]
 ```
-Replace "?" with config file name (without extenaion).
+Replace "?" with config file name (without extension).
 The file must be put inside "conf", under the directory with the same name.
 
 e.g.
@@ -149,7 +149,7 @@ Run finetuning with config specified in `conf/finetune/base.yaml`, and set the r
 
 
 `aux` config is special: the function specified in its `target` field will be loaded,
-and the config will be passed to that function. This is a quick and dirty way to add experiemnts that does not fit well to the established workflow.
+and the config will be passed to that function. This is a quick and dirty way to add experiments that does not fit well to the established workflow.
 
 
 ### Experiments:
@@ -215,7 +215,7 @@ python main.py report=base
 
 Scripts of certain ablation experiments are put in `src/aux`:
 ```bash
-python main.py aux=reduce_sampling
+python main.py aux=reduce_sampling aux.rate=0.95
 python main.py aux=no_fusion aux.rng_seeding.seed=0
 python main.py aux=report_no_fusion
 python main.py aux=mean_fusion aux.rng_seeding.seed=0
