@@ -90,7 +90,7 @@ EEG-Diff is distinguished by three key innovations:
 <div align="center">
 <br>
 <img src="assets/GenerationResult.png" width="566">
-</div>
+<h3>Fig. 4. EEG signals generated through the reverse process of SSMDP</h3></div>
 
 ## 📰 Latest Updates
 
