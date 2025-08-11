@@ -59,22 +59,22 @@ EEG-Diff is distinguished by three key innovations:
 
 <div align="center">
 <br>
-<img src="assets/mainImage1.png" width="466">
+<img src="assets/Result1.png" width="466">
 </div>
 
 <div align="center">
 <br>
-<img src="assets/mainImage2.png" width="566">
+<img src="assets/Result2.png" width="566">
 </div>
 
 <div align="center">
 <br>
-<img src="assets/mainImage3.png" width="566">
+<img src="assets/Result3.png" width="566">
 </div>
 
 <div align="center">
 <br>
-<img src="assets/mainImage4.png" width="566">
+<img src="assets/Result4.png" width="566">
 </div>
 
 ## 📰 Latest Updates
