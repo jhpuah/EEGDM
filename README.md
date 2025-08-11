@@ -3,6 +3,7 @@
 <img src="assets/title.png" width="166">
 <h3>EEG Diffusion Model</h3></div>
 
+<!--
 <p align="center">
   <a href="https://arxiv.org/abs/2505.15809">
     <img
@@ -16,7 +17,7 @@
         alt="MMaDA on Hugging Face"
     />
   </a>
-
+ -->
 
   
 </p>
