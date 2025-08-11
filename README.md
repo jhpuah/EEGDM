@@ -108,9 +108,12 @@ First, set up the environment with Conda: https://docs.conda.io/projects/conda/e
 ```bash
 conda create -n eegdm python=3.11
 conda activate eegdm
+```
+Then, install dependencies:
+```bash
 pip install -r requirements.txt
 ```
-The `requirement.txt` file is exported directly from our research environment (NVIDIA GeForce RTX 4090, CUDA Version: 12.4), if your hardware is incompatible, do the following instead:
+The `requirement.txt` file is exported directly from our working environment (NVIDIA GeForce RTX 4090, CUDA Version: 12.4), if your hardware is incompatible, do the following instead:
 
 1. Install torch following the official guide: https://pytorch.org/get-started/locally/
 
@@ -119,7 +122,7 @@ The `requirement.txt` file is exported directly from our research environment (N
 pip install numpy==1.26.4 hydra-core mne lightning pyhealth ema-pytorch diffusers einops wandb scipy
 ```
 
-We use Weight and Bias (https://wandb.ai/site/) for logging, and you will need an account for that. If this is undesired, replace instance of `WandbLogger` to your own logger, check Pytorch Lightning documentation for alternative: https://lightning.ai/docs/pytorch/stable/extensions/logging.html 
+We use Weight and Bias (https://wandb.ai/site/) for logging, and you will need an account for that. Alternatively, replace instances of `WandbLogger` to your own logger, check Pytorch Lightning documentation for available options: https://lightning.ai/docs/pytorch/stable/extensions/logging.html 
 
 
 
@@ -142,11 +145,11 @@ see Hydra documentation (https://hydra.cc/docs/intro/). E.g.
 ```bash
 python main.py finetune=base finetune.rng_seeding.seed=10
 ```
-Run pretraining with config specified in `conf/finetune/base.yaml`, and set the rng seed to 10.
+Run finetuning with config specified in `conf/finetune/base.yaml`, and set the rng seed to 10.
 
 
-`aux` config is special: the `main()` will load a function specified in its "target" field
-and pass the config to that function. This is a quick and dirty way to add experiemnts that does not fit well to the established workflow.
+`aux` config is special: the function specified in its `target` field will be loaded,
+and the config will be passed to that function. This is a quick and dirty way to add experiemnts that does not fit well to the established workflow.
 
 
 ### Experiments:
@@ -246,7 +249,7 @@ Others are logs by dependencies (`lightning_logs` by Pytorch Lightning, `outputs
 
 
 ## Unused Code
-This repo is still under active development, and left in several pieces unused/untested code. Any functionality implied by the code but not mentioned in the paper shall be considered experimental. Documentation about these code (if any) might be outdated or unreliable.
+This repo is still under active development, and left in several pieces of unused/untested code. Any functionality implied by the code but not mentioned in the paper shall be considered experimental. Documentation about these code (if any) might be outdated or unreliable.
 
 ## 📖 Citation
 
