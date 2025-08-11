@@ -51,8 +51,11 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 ## 😮 Hightlights
 
 • We presented EEGDM, a diffusion model-based framework for learning EEG signal representations and classification of multi-event EEG, extending difussion model beyond signal generation and data augmentation.
+
 • We developed structured state-space model diffusion pretraining (SSMDP) to capture the temporal dynamics of EEG signals and trained it via the forward and reverse process of DDPM for representation learning.
+
 • We proposed LFT to leverage and fuse the latent representations from SSMDP for downstream classification tasks.
+
 • We empirically compared our method with current state-of-the-art approaches on multi-event dataset TUEV to show its competitiveness and provided a detailed ablation study to analyze its components.
 
 ## Main result
