@@ -95,6 +95,7 @@ EEG-Diff is distinguished by three key innovations:
 ## 📰 Latest Updates
 
 *   **[2025-07-16]** Initial setup and README update.
+*   **[2025-08-11]** Main pages and experiment result update.
 
 ## ⚙️ Quick Start
 
