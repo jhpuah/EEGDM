@@ -56,14 +56,14 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 
 • We empirically compared our method with current state-of-the-art approaches on multi-event dataset TUEV to show its competitiveness and provided a detailed ablation study to analyze its components.
 
-## Main result
+## 📈 Main result
 
 <div align="center">
 <br>
 <img src="assets/Result1.png" width="466">
 </div>
 
-## Ablation
+## ✂️ Ablation
 
 <div align="center">
 <br>
@@ -90,7 +90,7 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 <img src="assets/Result6.png" width="566">
 </div>
 
-## Generation Sample
+## 🧠 Generation Sample
 
 <div align="center">
 <br>
@@ -249,7 +249,7 @@ During pretraining and finetuning, the scripts may create new directories:
 Others are logs by dependencies (`lightning_logs` by Pytorch Lightning, `outputs` by Hydra, etc.).  -->
 
 
-## Unused Code
+## ℹ️ Unused Code
 This repo is still under active development, and left in several pieces of unused/untested code. Any functionality implied by the code but not mentioned in the paper shall be considered experimental. Documentation about these code (if any) might be outdated or unreliable.
 
 ## 📖 Citation
