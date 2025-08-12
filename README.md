@@ -6,13 +6,13 @@
 <p align="center">
   <a href="">
     <img
-      src="https://img.shields.io/badge/MMaDA-Paper-red?logo=arxiv&logoColor=red"
+      src="https://img.shields.io/badge/EEGDM-Paper-red?logo=arxiv&logoColor=red"
       alt="EEGDM Paper on arXiv"
     />
   </a>
   <a href="https://huggingface.co/jhpuah/eegdm/tree/main">
     <img 
-        src="https://img.shields.io/badge/MMaDA--8B--Base-Hugging%20Face%20Model-orange?logo=huggingface&logoColor=yellow" 
+        src="https://img.shields.io/badge/EEGDM-Hugging%20Face%20Model-orange?logo=huggingface&logoColor=yellow" 
         alt="EEGDM on Hugging Face"
     />
   </a>
