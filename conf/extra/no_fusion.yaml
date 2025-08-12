@@ -1,7 +1,7 @@
 
 target:
   _target_: src.util.dynamic_load
-  item: src.aux.no_fusion.entry
+  item: src.extra.no_fusion.entry
 
 rng_seeding:
   seed: ???

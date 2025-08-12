@@ -1,7 +1,7 @@
 
 target:
   _target_: src.util.dynamic_load
-  item: src.aux.report_mean_fusion.entry
+  item: src.extra.report_mean_fusion.entry
 
 # checkpoint: "/media/D3/tester/reresearch/_plt/propertest/finetune/test.ckpt"
 checkpoint: 

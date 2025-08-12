@@ -1,22 +1,20 @@
 
 target:
   _target_: src.util.dynamic_load
-  item: src.aux.reduce_sampling.entry
+  item: src.extra.report_no_fusion.entry
 
 # checkpoint: "/media/D3/tester/reresearch/_plt/propertest/finetune/test.ckpt"
 checkpoint: 
-  - "./checkpoint/finetune/base/classifier.ckpt"
-  - "./checkpoint/finetune/base/classifier-v1.ckpt"
-  - "./checkpoint/finetune/base/classifier-v2.ckpt"
-  - "./checkpoint/finetune/base/classifier-v3.ckpt"
-  - "./checkpoint/finetune/base/classifier-v4.ckpt"
+  - "./checkpoint/finetune/no_fusion/classifier.ckpt"
+  - "./checkpoint/finetune/no_fusion/classifier-v1.ckpt"
+  - "./checkpoint/finetune/no_fusion/classifier-v2.ckpt"
+  - "./checkpoint/finetune/no_fusion/classifier-v3.ckpt"
+  - "./checkpoint/finetune/no_fusion/classifier-v4.ckpt"
 
-device: "cuda:7"
+device: "cuda:4"
 data_dir: "./data/faithful/test"
 
 pl_cls_version: 2
-
-rate: ???
 
 schema:
   - _target_: dataloader.TUEVDataset.TUEVDataField

@@ -130,7 +130,7 @@ We use Weight and Bias (https://wandb.ai/site/) for logging, and you will need a
 ### Usage Examples:
 
 ```bash
-python main.py [preprocessing=?] [pretrain=?] [cache=?] [finetune=?] [report=?] [aux=?]
+python main.py [preprocessing=?] [pretrain=?] [cache=?] [finetune=?] [report=?] [extra=?]
 ```
 Replace "?" with config file name (without extension).
 The file must be put inside "conf", under the directory with the same name.
@@ -149,7 +149,7 @@ python main.py finetune=base finetune.rng_seeding.seed=10
 Run finetuning with config specified in `conf/finetune/base.yaml`, and set the rng seed to 10.
 
 
-`aux` config is special: the function specified in its `target` field will be loaded,
+`extra` config is special: the function specified in its `target` field will be loaded,
 and the config will be passed to that function. This is a quick and dirty way to add experiments that does not fit well to the established workflow.
 
 
@@ -214,13 +214,13 @@ python main.py report=base
 
 **Other**
 
-Scripts of certain ablation experiments are put in `src/aux`:
+Scripts of certain ablation experiments are put in `src/extra`:
 ```bash
-python main.py aux=reduce_sampling aux.rate=0.95
-python main.py aux=no_fusion aux.rng_seeding.seed=0
-python main.py aux=report_no_fusion
-python main.py aux=mean_fusion aux.rng_seeding.seed=0
-python main.py aux=report_mean_fusion
+python main.py extra=reduce_sampling extra.rate=0.95
+python main.py extra=no_fusion extra.rng_seeding.seed=0
+python main.py extra=report_no_fusion
+python main.py extra=mean_fusion extra.rng_seeding.seed=0
+python main.py extra=report_mean_fusion
 ```
 All seeds need to be iterated from 0 to 4
 
@@ -228,7 +228,7 @@ All seeds need to be iterated from 0 to 4
 `main.py` is the entry point of this repo. 
 
 `src/` contains the scripts for generic
-`src/aux/` contains the scripts of aux... 
+`src/extra/` contains the scripts of extra... 
 
 `model/`
 

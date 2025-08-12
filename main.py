@@ -3,7 +3,7 @@ from omegaconf import DictConfig, OmegaConf
 from src import preprocessing, pretrain, finetune, report, caching
 
 # Usage:
-# python main.py [preprocessing=?] [pretrain=?] [cache=?] [finetune=?] [report=?] [aux=?]
+# python main.py [preprocessing=?] [pretrain=?] [cache=?] [finetune=?] [report=?] [extra=?]
 # replace "?" with config file name (without extenaion)
 # the file must be put inside "conf", under the directory with the same name
 #
@@ -16,7 +16,7 @@ from src import preprocessing, pretrain, finetune, report, caching
 # 
 # see also: hydra documentation (https://hydra.cc/docs/intro/)
 #
-# "aux" config is special, main() will load a function specified in its "target" field
+# "extra" config is special, main() will load a function specified in its "target" field
 # and pass the config file to that function
 # it is a quick and dirty way to add experiemnts that does not fit well to the established workflow
 # 
@@ -29,7 +29,7 @@ def main(config: DictConfig):
     cache_config = config.get("cache", None)
     finetune_config = config.get("finetune", None)
     report_config = config.get("report", None)
-    aux_config = config.get("aux", None)
+    extra_config = config.get("extra", None)
 
     if preprocessing_config is not None:
         print("Enter preprocessing")
@@ -51,9 +51,9 @@ def main(config: DictConfig):
         print("Enter reporting")
         report.entry(report_config)
 
-    if aux_config is not None:
-        print("Entering aux:", aux_config["target"]["item"])
-        hydra.utils.instantiate(aux_config["target"])(aux_config) # horrible
+    if extra_config is not None:
+        print("Entering extra:", extra_config["target"]["item"])
+        hydra.utils.instantiate(extra_config["target"])(extra_config) # horrible
 # --config-name=file
 
 
