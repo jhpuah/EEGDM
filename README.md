@@ -3,38 +3,35 @@
 <img src="assets/title.png" width="166">
 <h3>EEG Diffusion Model</h3></div>
 
-<!--
 <p align="center">
-  <a href="https://arxiv.org/abs/2505.15809">
+  <a href="">
     <img
       src="https://img.shields.io/badge/MMaDA-Paper-red?logo=arxiv&logoColor=red"
-      alt="MMaDA Paper on arXiv"
+      alt="EEGDM Paper on arXiv"
     />
   </a>
-  <a href="https://huggingface.co/Gen-Verse/MMaDA-8B-Base">
+  <a href="https://huggingface.co/jhpuah/eegdm/tree/main">
     <img 
         src="https://img.shields.io/badge/MMaDA--8B--Base-Hugging%20Face%20Model-orange?logo=huggingface&logoColor=yellow" 
-        alt="MMaDA on Hugging Face"
+        alt="EEGDM on Hugging Face"
     />
   </a>
- -->
-
-  
 </p>
 
 <div align="center">
 <br>
-<img src="assets/diff_v0.png" width="1066">
+<img src="assets/ssmdp_cap.png" width="1066">
+
 </div>
 
 <div align="center">
 <br>
-<img src="assets/pool_v0.png" width="1066">
+<img src="assets/pool_cap.png" width="1066">
 </div>
 
 <div align="center">
 <br>
-<img src="assets/cls_v0.png" width="1066">
+<img src="assets/lft_cap.png" width="1066">
 </div>
 
 
@@ -66,6 +63,8 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 <img src="assets/Result1.png" width="466">
 </div>
 
+## Ablation
+
 <div align="center">
 <br>
 <img src="assets/Result2.png" width="566">
@@ -91,10 +90,12 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 <img src="assets/Result6.png" width="566">
 </div>
 
+## Generation Sample
+
 <div align="center">
 <br>
 <img src="assets/GenerationResult.png" width="566">
-<h3>Fig. 4. EEG signals generated through the reverse process of SSMDP</h3></div>
+
 
 ## 📰 Latest Updates
 
