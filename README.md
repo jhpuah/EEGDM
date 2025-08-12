@@ -95,7 +95,7 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 <div align="center">
 <br>
 <img src="assets/GenerationResult.png" width="566">
-
+</div>
 
 ## 📰 Latest Updates
 
