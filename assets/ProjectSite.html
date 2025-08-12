@@ -224,7 +224,7 @@ class="external-link button is-normal is-rounded is-dark">
 <div class="columns is-centered">
 <div class="column is-two-fifths"> <!--is-half-->
 <figure class="image is-16by16">
-<img src="./static/images/gram_method.png" alt="Sample Image">
+<img src="./div_v0.png" alt="Sample Image">
 </figure>
 </div>
 </div>
@@ -373,7 +373,7 @@ The core of <b>SSMDP</b> is a Structured State-Space Model (SSM) architecture. T
 <div class="columns is-centered">
 <div class="column is-two-fifths">
 <figure class="image is-16by16">
-<img src="./static/videos/gif.gif" alt="Sample Image">
+<img src="./pool_v0.png" alt="Sample Image">
 </figure>
 </div>
 </div>
@@ -403,7 +403,7 @@ The <b>LFT</b> has a "latent fusion module" that uses a decoder-only transformer
 <div class="columns is-centered">
 <div class="column is-two-fifths">
 <figure class="image is-16by16">
-<img src="./static/images/small_large_volume.png" alt="Sample Image">
+<img src="./cls_v0.png" alt="Sample Image">
 </figure>
 </div>
 </div>
@@ -567,176 +567,6 @@ The <b>LFT</b> has a "latent fusion module" that uses a decoder-only transformer
 
 -->
 
-<section class="section">
-<div class="container">
-<div class="columns is-centered">
-<div class="column is-full-width">
-<div class="columns is-centered has-text-centered">
-<div class="column is-full-width">
-<h2 class="title is-3 is-size-2-desktop">Play with the combinations and see how gramian value change!</h2>
-</div>
-</div>
-<div class="content has-text-justified is-size-4-desktop">
-Select a text description, a video, and an audio below. The corresponding Gramian value will be displayed based on your selection.
-</div>
-        <!-- Display Gramian Value -->
-        <div id="result" class="content has-text-centered">
-          <h3 class="title is-3">Normalized Gramian Value: <span id="gramian-value">Select options above</span></h3>
-        </div>
-
-<div class="columns is-vcentered interpolation-panel">
-          
-<!-- Text, Video, and Audio Items -->
-<div class="item">
-
-<!-- Text -->
-<div class="media-container">
-
-<div class="radio-container">
-                <input type="radio" name="text" id="text1" value="text1" class="fancy-radio">
-                <input type="radio" name="text" id="text1" value="text1" class="fancy-radio" checked="checked">
-<label for="text1">Select this Text</label>
-</div>
-<span><h2 class="is-size-4-desktop">A dog is barking</h2></span>
-</div>
-
-<!-- Video -->
-<div class="media-container">
-<div class="radio-container">
-                <input type="radio" name="video" id="video1" value="video1" class="fancy-radio">
-                <input type="radio" name="video" id="video1" value="video1" class="fancy-radio" checked="checked">
-<label for="video1">Select this Video</label>
-</div>
-<video controls muted loop playsinline height="100%">
-<source src="./static/videos/video1.mp4" type="video/mp4">
-</video>
-</div>
-
-<!-- Audio -->
-<div class="media-container">
-<div class="radio-container">
-                <input type="radio" name="audio" id="audio1" value="audio1" class="fancy-radio">
-                <input type="radio" name="audio" id="audio1" value="audio1" class="fancy-radio" checked="checked">
-<label for="audio1">Select this Audio</label>
-</div>
-<audio controls>
-<source src="./static/audios/video1.mp3" type="audio/mp3">
-</audio>
-</div>
-</div>
-
-<div class="item">
-<!-- Text -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="text" id="text2" value="text2" class="fancy-radio">
-<label for="text2">Select this Text</label>
-</div>
-<span><h2 class="is-size-4-desktop">A dog is howling</h2></span>
-</div>
-
-<!-- Video -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="video" id="video2" value="video2" class="fancy-radio">
-<label for="video2">Select this Video</label>
-</div>
-<video controls muted loop playsinline height="100%">
-<source src="./static/videos/video2.mp4" type="video/mp4">
-</video>
-</div>
-
-<!-- Audio -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="audio" id="audio2" value="audio2" class="fancy-radio">
-<label for="audio2">Select this Audio</label>
-</div>
-<audio controls>
-<source src="./static/audios/video2.mp3" type="audio/mp3">
-</audio>
-</div>
-</div>
-
-<div class="item">
-<!-- Text -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="text" id="text3" value="text3" class="fancy-radio">
-<label for="text3">Select this Text</label>
-</div>
-<span><h2 class="is-size-4-desktop">A red cat is meowing</h2></span>
-</div>
-
-<!-- Video -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="video" id="video3" value="video3" class="fancy-radio">
-<label for="video3">Select this Video</label>
-</div>
-<video controls muted loop playsinline height="100%">
-<source src="./static/videos/video3.mp4" type="video/mp4">
-</video>
-</div>
-
-<!-- Audio -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="audio" id="audio3" value="audio3" class="fancy-radio">
-<label for="audio3">Select this Audio</label>
-</div>
-<audio controls>
-<source src="./static/audios/video3.mp3" type="audio/mp3">
-</audio>
-</div>
-</div>
-
-<div class="item">
-<!-- Text -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="text" id="text4" value="text4" class="fancy-radio">
-<label for="text4">Select this Text</label>
-</div>
-<span><h2 class="is-size-4-desktop">A black cat is meowing</h2></span>
-</div>
-
-<!-- Video -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="video" id="video4" value="video4" class="fancy-radio">
-<label for="video4">Select this Video</label>
-</div>
-<video controls muted loop playsinline height="100%">
-<source src="./static/videos/video4.mp4" type="video/mp4">
-</video>
-</div>
-
-<!-- Audio -->
-<div class="media-container">
-<div class="radio-container">
-<input type="radio" name="audio" id="audio4" value="audio4" class="fancy-radio">
-<label for="audio4">Select this Audio</label>
-</div>
-<audio controls>
-<source src="./static/audios/video4.mp3" type="audio/mp3">
-</audio>
-</div>
-</div>
-</div>
-
-        <!-- Display Gramian Value -->
-        <div id="result" class="content has-text-centered">
-          <h3 class="title is-3">Normalized Gramian Value: <span id="gramian-value">Select options above</span></h3>
-        </div>
-        
-</div>
-</div>
-</div>
-</section>
-
-
-
 
 
 
@@ -762,7 +592,7 @@ In this section, we present the main results of the proposed EEGDM framework in 
 <div class="columns is-centered">
 <div class="column is-two-fifths">
 <figure class="image is-16by16">
-<img src="./static/images/results.png" alt="Sample Image">
+<img src="./result1.png" alt="Sample Image">
 </figure>
 </div>
 </div>
