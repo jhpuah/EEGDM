@@ -1,8 +1,8 @@
 <div align="center">
 <br>
 <img src="assets/title.png" width="166">
-<h3>EEG Diffusion Model</h3></div>
-<h3 align="center"><a href="https://aimplifier.github.io/projects/eegdm/"> Project page here 🚀</a></h3>
+<h2>EEG Diffusion Model</h2></div>
+
 <p align="center">
   <a href="">
     <img
@@ -17,6 +17,8 @@
     />
   </a>
 </p>
+
+<h3 align="center"><a href="https://aimplifier.github.io/projects/eegdm/"> Project page here 🚀</a></h3>
 
 <div align="center">
 <br>
