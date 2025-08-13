@@ -1,7 +1,7 @@
 <div align="center">
 <br>
 <img src="assets/title.png" width="166">
-<h2>EEG Diffusion Model</h2></div>
+<h2>EEGDM: EEG Representation Learning via Generative Diffusion Model</h2></div>
 
 <p align="center">
   <a href="">
