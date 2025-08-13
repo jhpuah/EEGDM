@@ -2,7 +2,7 @@
 <br>
 <img src="assets/title.png" width="166">
 <h3>EEG Diffusion Model</h3></div>
-
+<h3 align="center"><a href="https://aimplifier.github.io/projects/eegdm/"> Project page here 🚀</a></h3>
 <p align="center">
   <a href="">
     <img
