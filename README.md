@@ -259,11 +259,13 @@ This repo is still under active development, and left in several pieces of unuse
 If you use this work, please cite:
 
 ```
-@article{eegdm2025,
-  title={EEGDM: A Novel EEG Diffusion Model},
-  author={Your Name(s) Here},
-  journal={Preprint},
-  year={2025}
+@misc{puah2025eegdm,
+      title={{EEGDM: EEG Representation Learning via Generative Diffusion Model}}, 
+      author={Jia Hong Puah, Sim Kuan Goh, Ziwei Zhang, Zixuan Ye, Chow Khuen Chan, Kheng Seang Lim, Si Lei Fong, Kok Sin Woon},
+      year={2025},
+      eprint={2508.14086},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
 }
 ```
 
