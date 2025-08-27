@@ -4,7 +4,7 @@
 <h2>EEGDM: EEG Representation Learning via Generative Diffusion Model</h2></div>
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2508.14086">
+  <a href="https://github.com/jhpuah/EEGDM/blob/main/EEGDM_V2.pdf">
     <img
       src="https://img.shields.io/badge/EEGDM-Paper-red?logo=arxiv&logoColor=red"
       alt="EEGDM Paper on arXiv"
