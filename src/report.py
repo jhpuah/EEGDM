@@ -4,15 +4,28 @@ from tqdm import tqdm
 from model.classifier_pl import PLClassifier as PLClassifier_v2
 from dataloader.TUEVDataset import TUEVDataset
 from pyhealth.metrics.multiclass import multiclass_metrics_fn
+from pyhealth.metrics.binary import binary_metrics_fn
 from hydra.utils import instantiate
 from sklearn import metrics
 import gc
+from functools import partial
 
 # TODO figure out how to distribute without repeated data
 def entry(config):
     checkpoint = config["checkpoint"]
     if isinstance(checkpoint, str): checkpoint = [checkpoint]
     pl_cls=[None, None, PLClassifier_v2][config.get("pl_cls_version", 1)]
+
+    is_binary = config.get("is_binary", False)
+    if is_binary:
+        assert config["n_class"] == 1
+        metric_fn = binary_metrics_fn
+        logit_to_prob_fn = lambda t: torch.nn.functional.sigmoid(t).unsqueeze(-1)
+        prob_to_cls_fn = lambda a: (a >= 0.5).astype(int)
+    else:
+        metric_fn = multiclass_metrics_fn
+        logit_to_prob_fn = partial(torch.nn.functional.softmax, dim=-1)
+        prob_to_cls_fn = partial(np.argmax, axis=1)
     
     dataset = TUEVDataset(
         config["data_dir"],
@@ -43,13 +56,15 @@ def entry(config):
 
                 _bs = pred.shape[0]
                 y_true[_idx: _idx + _bs] = batch_input[1].flatten().cpu().numpy()
-                y_prob[_idx: _idx + _bs, :] = torch.nn.functional.softmax(pred, dim=-1).cpu().numpy()
+                y_prob[_idx: _idx + _bs, :] = logit_to_prob_fn(pred).cpu().numpy()
                 _idx += _bs
 
-        result = multiclass_metrics_fn(y_true, y_prob, metrics=config["metrics"])
+        if config["is_binary"]: y_prob = y_prob.flatten()
+
+        result = metric_fn(y_true, y_prob, metrics=config["metrics"])
         all_result.append(result)
         
-        print(metrics.confusion_matrix(y_true, y_prob.argmax(axis=1)))
+        print(metrics.confusion_matrix(y_true, prob_to_cls_fn(y_prob)))
         
         del model, y_true, y_prob
         gc.collect()

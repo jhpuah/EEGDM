@@ -8,6 +8,7 @@ from tqdm import tqdm
 import pickle
 import shutil
 
+# TODO distribute to multiple device
 @torch.no_grad()
 def entry(config):
     # raise NotImplementedError()
@@ -27,7 +28,8 @@ def entry(config):
         LatentActivityExtractor(
             model=diffusion_model.ema.ema_model,
             diffusion_t=config["diffusion_t"],
-            query=reduce_config["query"]
+            query=reduce_config["query"],
+            use_cond=config.get("use_cond", None)
         ),
         LatentActivityReducer(**reduce_config)
     )
@@ -98,6 +100,7 @@ def entry(config):
         "diffusion_model_checkpoint": diffusion_model_checkpoint,
         "diffusion_t": config["diffusion_t"],
         "fwd_with_noise": config["fwd_with_noise"],
+        "use_cond": config.get("use_cond", None),
         **reduce_config
     }
 

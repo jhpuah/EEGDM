@@ -1,0 +1,96 @@
+
+target:
+  _target_: src.util.dynamic_load
+  item: src.extra.fast_report.entry
+
+pl_cls_version: 2
+
+checkpoint: "checkpoint/finetune/chbmit_bin_filt/classifier-v3.ckpt"
+
+trainer:
+  _target_: lightning.pytorch.Trainer
+  fast_dev_run: False
+  accelerator: 'gpu'
+  strategy: 'ddp'
+  devices: [0,1,2,3,4,5,6,7]
+  logger: null
+  default_root_dir: "./checkpoint"
+  callbacks: null
+  max_epochs: 50
+  min_epochs: 5
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: null
+  log_every_n_steps: null
+  enable_checkpointing: True
+  enable_progress_bar: True
+  enable_model_summary: True
+  accumulate_grad_batches: 1
+  gradient_clip_val: 3
+  gradient_clip_algorithm: "norm"
+  deterministic: True
+  inference_mode: True
+  use_distributed_sampler: True
+  profiler: null
+  detect_anomaly: False
+  barebones: False
+
+data:
+  _target_: builtins.dict
+  # root: "./data/cached/chbmit"
+  root: "/media/D1/tester_temp/chbmit_filt"
+  # root: "/media/D3/tester/rereresearch/proper/data/chbmit/processed_seg/"
+  test_dir: "test"
+  # batch_size: 32
+  # num_workers: 4
+  schema:
+    - _target_: dataloader.TUEVDataset.TUEVDataField
+      _args_:
+        - "__cache_data__"
+        - _target_: src.util.dynamic_load
+          item: torch.float
+    - _target_: dataloader.TUEVDataset.TUEVDataField
+      _args_:
+        - "__cache_label__"
+        - _target_: src.util.dynamic_load
+          item: torch.long
+  stft_kwargs: null
+  test_schema:
+    - _target_: dataloader.TUEVDataset.TUEVDataField
+      _args_:
+        - "X"
+        - _target_: src.util.dynamic_load
+          item: torch.float
+        - _target_: src.util.dynamic_load
+          item: src.util.data_transform_chbmit_filt
+    - _target_: dataloader.TUEVDataset.TUEVDataField
+      _args_:
+        - "y"
+        - _target_: src.util.dynamic_load
+          item: torch.long
+        # - _target_: src.util.dynamic_load
+        #   item: src.util.minus_one
+
+# data:
+#   _target_: builtins.dict
+#   root: "./data/faithful"
+#   train_dir: "train"
+#   val_dir: "val"
+#   test_dir: "test"
+#   batch_size: 16
+#   num_workers: 4
+#   schema:
+#     - _target_: dataloader.TUEVDataset.TUEVDataField
+#       _args_:
+#         - "signal"
+#         - _target_: src.util.dynamic_load
+#           item: torch.float
+#         - _target_: src.util.dynamic_load
+#           item: src.util.staged_mu_law
+#     - _target_: dataloader.TUEVDataset.TUEVDataField
+#       _args_:
+#         - "label"
+#         - _target_: src.util.dynamic_load
+#           item: torch.long
+#         - _target_: src.util.dynamic_load
+#           item: src.util.minus_one
+#   stft_kwargs: null

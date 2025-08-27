@@ -20,6 +20,7 @@ class LatentActivityExtractor(nn.Module):
         diffusion_t=1,
 
         query=["inter"], # inter, gate, filter
+        use_cond=None,
     ):
         super().__init__()
 
@@ -36,9 +37,13 @@ class LatentActivityExtractor(nn.Module):
         self.query = query
         for q in query: assert q in ("inter", "gate", "filter")
         
-        self.C = model.n_class
-        if model.have_null_class: self.C -= 1
-        self.cond = nn.Buffer(torch.arange(self.C, dtype=torch.long).unsqueeze(-1))
+        if use_cond is not None:
+            self.cond = nn.Buffer(torch.tensor(use_cond, dtype=torch.long).reshape(-1, 1))
+            self.C = self.cond.shape[0]
+        else:
+            self.C = model.n_class
+            if model.have_null_class: self.C -= 1
+            self.cond = nn.Buffer(torch.arange(self.C, dtype=torch.long).unsqueeze(-1))
         self.diffusion_steps = nn.Buffer(torch.full((self.C, 1), diffusion_t, dtype=torch.long))
 
     @torch.no_grad()
@@ -59,12 +64,23 @@ class LatentActivityExtractor(nn.Module):
 
         x = self.init_rearr(x)
         if x.dim() < 3: x = x.unsqueeze(1)
+        fold = 1
+        if x.shape[2] > 1000: # FIXME magic number, should be a property of diffusion backbone
+            assert rate == 1 # FIXME yet to figure out
+            # if (to_pad := x.shape[3] % 1000) != 0: # FIXME can implement sliding window, consider case where L % 1000 != 0
+            #     to_pad = 1000 - to_pad
+            #     x = torch.nn.functional.pad(x, (0, to_pad))
+            fold = x.shape[2] // 1000
+
+        x = rearrange(x, "B C (f L) -> (B f) C L", f=fold)
+
         if local_cond is not None:
             local_cond = self.init_rearr(local_cond)
             if local_cond.dim() < 4: local_cond = local_cond.unsqueeze(1)
+            local_cond = rearrange(local_cond, "B ... (f L) -> (B f) ... L", f=fold)
         
-        diffusion_steps = self.diffusion_steps.repeat(B, 1)
-        cond = self.cond.repeat(B, 1)
+        diffusion_steps = self.diffusion_steps.repeat(B * fold, 1)
+        cond = self.cond.repeat(B * fold, 1)
         
         cond = self.model.calc_cond(diffusion_steps, cond)
 
@@ -85,6 +101,7 @@ class LatentActivityExtractor(nn.Module):
         # (B C) n q (p l) H
         #   0   1 2   3   4
         latent_activities = rearrange(latent_activities, "(B C) ... -> B C ...", C = self.C)
+        latent_activities = rearrange(latent_activities, "(B f) C n q L H -> B C n q (f L) H", f=fold)
         return latent_activities
 
     # def do_cache(self, input):
@@ -713,6 +730,8 @@ class Classifier(nn.Module):
         pool_merge="share", # mix, cat, share
         multi_query_merge="seq", # cat, seq, ind
 
+        use_cond=None,
+
         d_embed=None,
         init_weight=False,
         embed_query=False,
@@ -741,7 +760,7 @@ class Classifier(nn.Module):
         classifier_pos_embed_dim="TP", # TPN or TA
         classifier_stack_struct="sfsfsfsf",
         classifier_final_act="pool", # cat, pool, cls
-        n_class=6
+        n_class=6,
     ):
         if classifier_use_ap_clst:
             assert n_ap_clst > 0 and across_pool_stack_struct is not None
@@ -752,7 +771,11 @@ class Classifier(nn.Module):
             start=start,
             end=end,
             diffusion_t=diffusion_t,
-            query=query
+            query=query,
+
+            # TODO this can be derived from ch_order
+            # if the EEG channels corresponding to diffusion backbone embedding is known
+            use_cond=use_cond,
         )
         
         self.reducer = LatentActivityReducer(

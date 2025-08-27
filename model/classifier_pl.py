@@ -11,10 +11,26 @@ import os
 from einops import rearrange
 import mne
 from tqdm import tqdm
-from torchmetrics.classification import MulticlassAccuracy, MulticlassCohenKappa, MulticlassF1Score, MulticlassRecall, MulticlassConfusionMatrix
+from torchmetrics.classification import MulticlassAccuracy, MulticlassCohenKappa, MulticlassF1Score, BinaryStatScores, BinaryAUROC, BinaryPrecisionRecallCurve, BinaryROC
 from torchmetrics import MetricCollection
 import wandb
 from copy import deepcopy
+import matplotlib.pyplot as plt
+
+class BinaryBalanceAccuracy(BinaryStatScores):
+    def compute(self):
+        tp, fp, tn, fn, sup = super().compute()
+        tpr = tp / (tp + fn)
+        tnr = tn / (tn + fp)
+        return (tpr + tnr) / 2
+
+class BinaryAUPRC(BinaryPrecisionRecallCurve):
+    def compute(self):
+        prc, rec, thres = super().compute()
+        prc, idx = torch.sort(prc, descending=True, stable=True)
+        rec = rec[idx]
+
+        return torch.trapz(prc, rec) # recall is x axis, trapz(y, x)
 
 class CustomCrossEntropyLoss(torch.nn.Module):
     def __init__(
@@ -23,24 +39,39 @@ class CustomCrossEntropyLoss(torch.nn.Module):
         reduction: str = 'mean',
         label_smoothing: float = 0.0,
         gamma: float = 0,
+        mode = "multiclass",
+        pos_weight = None,
         # is_binary: bool = False
     ):
         super().__init__()
-        self.weight = weight
+        self.weight = None if weight is None else torch.nn.Buffer(torch.tensor(weight).flatten())
         match reduction:
             case "mean": self.reduce_fn = torch.mean
             case "sum": self.reduce_fn = torch.sum
             case _: raise NotImplementedError()
         self.label_smoothing = label_smoothing
         self.gamma = gamma
+        self.mode = mode
+        self.pos_weight = None if pos_weight is None else torch.nn.Buffer(torch.tensor([pos_weight]))
+        if mode == "binary":
+            assert weight is None
+        elif mode == "multiclass":
+            assert pos_weight == None
         # self.is_binary = is_binary
         # if self.is_binary: assert label_smoothing == 0
     
     def forward(self, pred, target):
-        ce_loss = F.cross_entropy(pred, target, weight=self.weight, reduction="none", label_smoothing=self.label_smoothing)
+        match self.mode:
+            case "multiclass":
+                ce_loss = F.cross_entropy(pred, target, weight=self.weight, reduction="none", label_smoothing=self.label_smoothing)
+            case "binary":
+                _target = target.float() * (1 - self.label_smoothing) + (self.label_smoothing / 2)
+                ce_loss = F.binary_cross_entropy_with_logits(pred, _target, pos_weight=self.pos_weight, reduction="none")
         if self.gamma == 0: return self.reduce_fn(ce_loss)
 
-        prob = F.softmax(pred, dim=-1) * F.one_hot(target, num_classes=pred.shape[-1])
+        match self.mode:
+            case "multiclass": prob = F.softmax(pred, dim=-1) * F.one_hot(target, num_classes=pred.shape[-1])
+            case "binary": prob = F.sigmoid(pred)
         confidence = prob.sum(dim=-1, keepdim=True)
         focal_weight = (1 - confidence) ** self.gamma
         ce_loss = focal_weight * ce_loss
@@ -48,38 +79,58 @@ class CustomCrossEntropyLoss(torch.nn.Module):
         return self.reduce_fn(ce_loss)
 
 class PLClassifier(pl.LightningModule):
-    def __init__(self, diffusion_model_checkpoint, model_kwargs, ema_kwargs, opt_kwargs, sch_kwargs, criterion_kwargs, fwd_with_noise, data_is_cached, run_test_together=False, cls_version=1, lrd_kwargs=None):
+    def __init__(self, diffusion_model_checkpoint, model_kwargs, ema_kwargs, opt_kwargs, sch_kwargs, criterion_kwargs, fwd_with_noise, data_is_cached, run_test_together=False, cls_version=1, lrd_kwargs=None, is_binary=False):
         super().__init__()
         self.save_hyperparameters()
-
+        self._test_data_is_cached_for_fast_report=False
         # print(self.hparams)
 
         Classifier = [None, Classifier_v1][cls_version]
 
         diffusion_model: PLDiffusionModel = PLDiffusionModel.load_from_checkpoint(diffusion_model_checkpoint, map_location=self.device)
         self.model = Classifier(model=diffusion_model.ema.ema_model, **model_kwargs)
-        self.ema = EMA(
-            self.model,
-            ignore_startswith_names={"extractor", "reducer"}, # ignore the diffusion backbone model in EMA
-            **ema_kwargs
-        )
+        if ema_kwargs is not None:
+            self.ema = EMA(
+                self.model,
+                ignore_startswith_names={"extractor", "reducer"}, # ignore the diffusion backbone model in EMA
+                **ema_kwargs
+            )
+            self.should_update_ema = True
+        else:
+            self.ema = self.model
+            self.should_update_ema = False
         self.noise_sch = diffusion_model.noise_sch
 
-        self.val_metrics = MetricCollection(
-            {
-                "bacc": MulticlassAccuracy(num_classes=6, average="macro", validate_args=False), # B C, B
-                # "bacc1": MulticlassRecall(num_classes=6, average="macro", validate_args=False), # B C, B
-                "kappa": MulticlassCohenKappa(num_classes=6, weights=None, validate_args=False),
-                "wf1": MulticlassF1Score(num_classes=6, average="weighted", validate_args=False),
-            },
-            prefix="val/",
-        )
+        if not is_binary:
+            self.val_metrics = MetricCollection(
+                {
+                    "bacc": MulticlassAccuracy(num_classes=model_kwargs["n_class"], average="macro", validate_args=False), # B C, B
+                    # "bacc1": MulticlassRecall(num_classes=6, average="macro"), # B C, B
+                    "kappa": MulticlassCohenKappa(num_classes=model_kwargs["n_class"], weights=None, validate_args=False),
+                    "wf1": MulticlassF1Score(num_classes=model_kwargs["n_class"], average="weighted", validate_args=False),
+                },
+                prefix="val/",
+            )
+        else:
+            assert model_kwargs["n_class"] == 1
+            self.val_metrics = MetricCollection(
+                {
+                    "bacc": BinaryBalanceAccuracy(validate_args=False),
+                    "auprc": BinaryAUPRC(validate_args=False),
+                    "auroc": BinaryAUROC(validate_args=False),
+                },
+                prefix="val/",
+            )
+
         self.test_metrics = self.val_metrics.clone(prefix="test/")
         
         # deadlock
         # self.train_metrics = self.val_metrics.clone(prefix="train/")
         
-        self.criterion = CustomCrossEntropyLoss(**criterion_kwargs)
+        self.criterion = CustomCrossEntropyLoss(
+            **criterion_kwargs,
+            mode="binary" if is_binary else "multiclass"
+        )
         
         if fwd_with_noise:
             assert not data_is_cached
@@ -182,7 +233,7 @@ class PLClassifier(pl.LightningModule):
         self, epoch, batch_idx, optimizer, optimizer_closure = None,
     ):
         super().optimizer_step(epoch=epoch, batch_idx=batch_idx, optimizer=optimizer, optimizer_closure=optimizer_closure)
-        self.ema.update()
+        if self.should_update_ema: self.ema.update()
         
         if self.hparams["lrd_kwargs"]is not None and self.hparams["lrd_kwargs"].get("use_new_setup", False):
             for param_group in optimizer.param_groups:
@@ -207,7 +258,7 @@ class PLClassifier(pl.LightningModule):
     
     @torch.no_grad()
     def test_step(self, batch_input, batch_idx):
-        loss, pred, label = self.get_loss_pred_label(batch_input, use_ema=True, data_is_cached=False)
+        loss, pred, label = self.get_loss_pred_label(batch_input, use_ema=True, data_is_cached=self._test_data_is_cached_for_fast_report)
         
         self.log("test/loss", loss, on_epoch=True, on_step=False, sync_dist=True, prog_bar=True, add_dataloader_idx=False, batch_size=pred.shape[0])
         self.test_metrics.update(pred, label)
@@ -255,7 +306,9 @@ class PLClassifier(pl.LightningModule):
             pred = model((noisy_signal, local_cond), data_is_cached=data_is_cached, rate=rate)
         else:
             pred = model(batch, data_is_cached=data_is_cached)
-
+        
+        if self.hparams["is_binary"]: pred = pred.flatten()
+        
         return self.criterion(pred, label), pred, label
 
     def forward_sample(self, batch, force_zero_noise=None):

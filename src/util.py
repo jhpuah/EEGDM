@@ -1,5 +1,7 @@
 import importlib
 import numpy as np
+from scipy import signal
+import mne
 
 def mu_law(x, mu = 255):
     return np.sign(x) * np.log(1 + mu * np.abs(x)) / np.log(1 + mu)
@@ -26,6 +28,29 @@ def minus_one(x):
 
 def div_100_staged_mu_law(x, mu=255):
     return staged_mu_law(x / 100, mu=mu)
+
+def data_transform_chbmit(x, mu=255):
+    return div_100_staged_mu_law(signal.resample(x, 2000, axis=1))
+
+def data_transform_chbmit_filt(x, mu=255):
+    return div_100_staged_mu_law(
+        mne.filter.notch_filter(
+            mne.filter.filter_data(
+                signal.resample(x, 2000, axis=1)
+                , 200, 0.5, 75
+            ),
+        200, 60)
+    )
+
+def data_transform_chbmit_filt2(x, mu=255):
+    return div_100_staged_mu_law(
+        mne.filter.notch_filter(
+            mne.filter.filter_data(
+                signal.resample(x, 2000, axis=1)
+                , 200, 0.5, 75
+            ),
+        200, [60, 16, 32, 48, 64, 80])
+    )
 
 def dynamic_load(item):
     item = item.split(".")

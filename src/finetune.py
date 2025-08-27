@@ -18,10 +18,11 @@ def entry(config: DictConfig):
     trainer = instantiate(config["trainer"])
     data_is_cached = config.get("data_is_cached", False)
     if data_is_cached:
-        metadata_provided = {
+        metadata_inferred = {
             "diffusion_model_checkpoint": config["model"]["diffusion_model_checkpoint"],
             "diffusion_t": config["model"]["model_kwargs"]["diffusion_t"],
             "fwd_with_noise": config["model"]["fwd_with_noise"],
+            "use_cond": config["model"]["model_kwargs"].get("use_cond", None),
             "query": config["model"]["model_kwargs"]["query"],
             "reduce": config["model"]["model_kwargs"]["reduce"],
             "rescale": config["model"]["model_kwargs"]["rescale"],
@@ -34,8 +35,8 @@ def entry(config: DictConfig):
         
         with open(os.path.join(config["data"]["root"], "metadata.pkl"), "rb") as m:
             metadata = pickle.load(m)
-        assert metadata.keys() == metadata_provided.keys()
-        for k in metadata_provided.keys(): assert metadata[k] == metadata_provided[k]
+        assert metadata.keys() == metadata_inferred.keys()
+        for k in metadata_inferred.keys(): assert metadata[k] == metadata_inferred[k]
 
     pl_cls = [None, None, PLClassifier_v2][config.get("pl_cls_version", 1)]
     model = pl_cls(
@@ -49,7 +50,8 @@ def entry(config: DictConfig):
         data_is_cached=data_is_cached,
         run_test_together=config["model"]["run_test_together"],
         cls_version=config["model"]["cls_version"],
-        lrd_kwargs=config["model"]["lrd_kwargs"]
+        lrd_kwargs=config["model"]["lrd_kwargs"],
+        is_binary=config["model"].get("is_binary", False)
     )
 
     data_config = instantiate(config["data"])
