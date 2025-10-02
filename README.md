@@ -50,15 +50,16 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 
 ## 😮 Hightlights
 
-• We presented EEGDM, a diffusion model-based framework for learning EEG signal representations and classification of multi-event EEG, extending difussion model beyond signal generation and data augmentation.
+• We presented EEGDM, a diffusion model-based framework for learning EEG signal representations and classification of multi-event EEG, extending diffusion models beyond signal generation and data augmentation.
 
-• We developed structured state-space model diffusion pretraining (SSMDP) to capture the temporal dynamics of EEG signals and trained it via the forward and reverse process of DDPM for representation learning.
+• We developed the structured state-space model diffusion pretraining (SSMDP) to capture the temporal dynamics of EEG signals and trained it via the forward and reverse process of DDPM for representation learning.
 
 • We proposed LFT to leverage and fuse the latent representations from SSMDP for downstream classification tasks.
 
-• We empirically compared our method with current state-of-the-art approaches on multi-event dataset TUEV to show its competitiveness and provided a detailed ablation study to analyze its components.
+• We empirically compared our method with current state-of-the-art approaches on the multi-event dataset TUEV to show its competitiveness and provided a detailed ablation study to analyze its components.
 
 ## 📈 Main result
+EEGDM outperforms various EEG FMs despite the disadvantage in the volume of training data and the number of trainable parameters. On top of that, finetuning EEGDM will not update the pretrained parameters, allowing one backbone to be used in multiple downstream tasks simultaneously.
 
 <div align="center">
 <br>
@@ -66,30 +67,48 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 </div>
 
 ## ✂️ Ablation
+DDPM is a framework with many moving parts. In this section, we show that our design choices are necessary for improved performance. 
 
 <div align="center">
-<br>
 <img src="assets/Result2.png" width="566">
 </div>
 
+
 <div align="center">
-<br>
 <img src="assets/Result3.png" width="566">
 </div>
 
+<br/>
+Another ablation shows that the latent activities of every part of the diffusion backbones contain classification-efficient representation, and the quality tends to increase as the layers deepen.
+
 <div align="center">
-<br>
 <img src="assets/Result4.png" width="566">
 </div>
 
+<br/>
+The latent fusion module is the largest trainable component of the LFT. Here, we show that it is irreplaceable by other non-parameterized methods such as average pooling and flattening.
+
 <div align="center">
-<br>
 <img src="assets/Result5.png" width="566">
 </div>
 
+<br>
+The unique formulation of SSMDP and LFT enables the EEGDM framework to operate at a different sampling rate without retraining, at the cost of degraded performance.
+
+<div align="center">
+<img src="assets/Result6.png" width="566">
+</div>
+
+## 🔀 Generalize to CHB-MIT
+To verify the robustness of the learned representations in cross-domain generalization, we finetuned the model on a dataset with unseen characteristics.
+
+More specifically, the model pretrained on TUEV (containing sharp waves and artifacts) is finetuned on CHB-MIT for seizure detection.
+
+The results show that EEGDM outperforms other FMs despite having a much smaller pretraining set that lacks variety, indicating high generalizability and robustness.
+
 <div align="center">
 <br>
-<img src="assets/Result6.png" width="566">
+<img src="assets/ResultChb.png" width="566">
 </div>
 
 ## 🧠 Generation Sample
@@ -103,6 +122,8 @@ The proposed method addresses critical limitations in current EEG analysis, incl
 
 *   **[2025-07-16]** Initial setup and README update.
 *   **[2025-08-11]** Main pages and experiment result update.
+*   **[2025-08-27]** Preprint V2.
+*   **[2025-10-02]** Update README to match preprint V2.
 
 ## ⚙️ Quick Start
 
@@ -116,7 +137,7 @@ Then, install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
-The `requirement.txt` file is exported directly from our working environment (NVIDIA GeForce RTX 4090, CUDA Version: 12.4), if your hardware is incompatible, do the following instead:
+The `requirement.txt` file is exported directly from our working environment (NVIDIA GeForce RTX 4090, CUDA Version: 12.4). If your hardware is incompatible, do the following instead:
 
 1. Install torch following the official guide: https://pytorch.org/get-started/locally/
 
@@ -125,7 +146,7 @@ The `requirement.txt` file is exported directly from our working environment (NV
 pip install numpy==1.26.4 hydra-core mne lightning pyhealth ema-pytorch diffusers einops wandb scipy
 ```
 
-We use Weight and Bias (https://wandb.ai/site/) for logging, and you will need an account for that. Alternatively, replace instances of `WandbLogger` to your own logger, check Pytorch Lightning documentation for available options: https://lightning.ai/docs/pytorch/stable/extensions/logging.html 
+We use Weight and Bias (https://wandb.ai/site/) for logging, and you will need an account for that. Alternatively, replace instances of `WandbLogger` with your own logger, check Pytorch Lightning documentation for available options: https://lightning.ai/docs/pytorch/stable/extensions/logging.html 
 
 
 
@@ -134,26 +155,41 @@ We use Weight and Bias (https://wandb.ai/site/) for logging, and you will need a
 ```bash
 python main.py [preprocessing=?] [pretrain=?] [cache=?] [finetune=?] [report=?] [extra=?]
 ```
-Replace "?" with config file name (without extension).
+Replace "?" with the config file name (without extension).
 The file must be put inside "conf", under the directory with the same name.
 
 e.g.
 ```bash
 python main.py pretrain=base
 ```
-Run pretraining with config specified in `conf/pretrain/base.yaml`.
+Run pretraining with the config specified in `conf/pretrain/base.yaml`.
 
-You can override config in command line, 
+You can override config in the command line, 
 see Hydra documentation (https://hydra.cc/docs/intro/). E.g. 
 ```bash
 python main.py finetune=base finetune.rng_seeding.seed=10
 ```
-Run finetuning with config specified in `conf/finetune/base.yaml`, and set the rng seed to 10.
+Run finetuning with the config specified in `conf/finetune/base.yaml`, and set the RNG seed to 10.
 
 
 `extra` config is special: the function specified in its `target` field will be loaded,
-and the config will be passed to that function. This is a quick and dirty way to add experiments that does not fit well to the established workflow.
+and the config will be passed to that function. This is a quick and dirty way to add experiments that do not fit well into the established workflow.
 
+An example `extra` config:
+```yaml
+# Specify the script and function to load
+target:
+  _target_: src.util.dynamic_load
+  item: src.extra.<script name>.<function name>
+
+# Everything will be passed to the specified function
+# Including the "target" field above too
+config1: configcontent
+config2:
+  - 1
+  - 2
+  _ ...
+```
 
 ### Experiments:
 **Preprocessing:**
@@ -161,12 +197,12 @@ and the config will be passed to that function. This is a quick and dirty way to
 
 We follow the general preprocessing logic of LaBraM: https://github.com/935963004/LaBraM/blob/main/dataset_maker/make_TUEV.py
 
-To produce single-channel EEG signal for diffusion model pretraining, run:
+To produce the single-channel EEG signals for diffusion model pretraining, run:
 ```bash
 python main.py preprocessing=pretrain
 ```
 
-To produce signal for finetuning, run:
+To produce signals for finetuning, run:
 ```bash
 python main.py preprocessing=faithful
 ```
@@ -178,15 +214,15 @@ python main.py pretrain=?
 ```
 Where `?` is `base`, `linear` or `nolaw`.
 
-`base` uses cosine noise scheduler and perform mu-law based extreme value suppression. `linear` uses linear noise scheduler, and `nolaw` does not perform value suppression.
+`base` uses cosine noise scheduler and performs mu-law based extreme value suppression. `linear` uses linear noise scheduler, and `nolaw` does not perform value suppression.
 
 **Caching:**
 
-If noise injection is disabled, the latent tokens can be cached to avoid repeated computation.
+If noise injection is disabled, the latent tokens can be cached to avoid repeated computation. This speeds up finetuning and reduces the memory usage significantly.
 
-The test data is untouched during caching.
+The test data are untouched during caching: The model can handle cached and uncached data.
 
-See `conf/cache` for available options.
+See `conf/cache` for available options. Note that the size of the cached TUEV is 94 GB, and 480 GB for CHB-MIT.
 ```bash
 python main.py cache=base
 ```
@@ -195,11 +231,11 @@ python main.py cache=base
 
 <!-- Use `finetune.data_is_cached=<boolean>` to tell  -->
 
-If data is cached, the code will check metadata to ensure that it is consistent with the model hyperparameter.
+If data is cached, the code will check the metadata to ensure that it is consistent with the model hyperparameter.
 
 See `conf/finetune` for available options.
 
-In our experiment, `finetune.rng_seeding.seed` is set to 0, 1, 2, 3 and 4 to produce 5 checkpoints
+In our experiment, `finetune.rng_seeding.seed` is set to 0, 1, 2, 3, and 4 to produce 5 checkpoints
 
 ```bash
 python main.py finetune=base finetune.rng_seeding.seed=0
@@ -209,22 +245,52 @@ python main.py finetune=base finetune.rng_seeding.seed=0
 
 If testing data cannot be distributed evenly across devices, certain data will be duplicated and cause inaccuracy in the reported metrics. Using `report` will avoid this issue.
 
-`report` also calculate the mean and standard deviation of metrices of multiple checkpoints.
+`report` also calculates the mean and standard deviation of metrics of multiple checkpoints.
 ```bash
 python main.py report=base
 ```
 
-**Other**
+**Other Ablation**
 
 Scripts of certain ablation experiments are put in `src/extra`:
 ```bash
-python main.py extra=reduce_sampling extra.rate=0.95
+python main.py extra=reduce_sampling extra.rate=0.95 # 200 Hz (original sampling rate) * 0.95 = 190 Hz
 python main.py extra=no_fusion extra.rng_seeding.seed=0
 python main.py extra=report_no_fusion
 python main.py extra=mean_fusion extra.rng_seeding.seed=0
 python main.py extra=report_mean_fusion
 ```
 All seeds need to be iterated from 0 to 4
+
+**CHB-MIT**
+
+Using the `backbone.ckpt` pretrained on TUEV, the following commands cache and finetune EEGDM on CHB-MIT, then report the result:
+```bash
+python main.py cache=base_chbmit
+python main.py finetune=base_chbmit_bin_filt finetune.rng_seeding.seed=0
+python main.py report=base_chbmit_bin
+```
+All seeds need to be iterated from 0 to 4
+
+## 🔬 Reproducibility
+Pytorch does not guarantee reproducibility across different environments: https://docs.pytorch.org/docs/stable/notes/randomness.html
+
+Regardless, we released the checkpoints trained in our environment on HuggingFace:
+* `backbone.ckpt`: The single channel diffusion model trained on TUEV training set, RNG seed 0. This checkpoint allows you to skip `pretrain`, and it is not required to run `report`.
+
+* `classifier.ckpt`: The finetuned model on TUEV for EEG event classification, RNG seed 0. This model can be used directly in `report`: 
+
+```bash
+python main.py report=base report.checkpoint=["<path to the downloaded checkpoint>"]
+``` 
+
+* `chbmit_classifier.ckpt`: The finetuned model on CHB-MIT dataset, using the `backbone.ckpt` pretrained on TUEV, RNG seed 0. This model can be used directly in `report`: 
+
+```bash
+python main.py report=base_chbmit_bin report.checkpoint=["<path to the downloaded checkpoint>"]
+``` 
+
+
 
 <!-- ## Repo Structure
 `main.py` is the entry point of this repo. 
@@ -252,7 +318,20 @@ Others are logs by dependencies (`lightning_logs` by Pytorch Lightning, `outputs
 
 
 ## ℹ️ Unused Code
-This repo is still under active development, and left in several pieces of unused/untested code. Any functionality implied by the code but not mentioned in the paper shall be considered experimental. Documentation about these code (if any) might be outdated or unreliable.
+This repo is still under active development and has several pieces of unused/untested code. Any functionality implied in the code but not mentioned in the paper shall be considered experimental. Documentation about them (if any) might be outdated or unreliable.
+
+In particular, the layerwise learning rate and weight decay for LFT will not work. Best to leave `lrd_kwargs` untouched, or set it to `null`.
+
+## 🗺️ Roadmap
+Current aim: clean up the mess by Dec 2025
+* Proper documentation of class parameters and available options, add user-friendly error messages
+* Refactor `model.classifier.MHAStack`: it makes calculating the depth of a layer unnecessarily complicated, hindering the implementation of layerwise learning rate decay
+* Cleanup config files: most files are copy-pasted from the respective `base.yaml`, only changing one or two lines, there must be a better way
+* `hydra.utils.instantiate` + `src.util.dynamic_load`: horrible
+* Rename classes: `dataloader.TUEVDataset` is used for other dataset as well, `model.classifier` should be `LatentFusionTransfromer`, etc.
+* Optimize the code: parallelize `cache` and `report`, optimize checkpoint size, check `TODO`s in code ...
+* Remove `preprocessing` from the workflow, it should be a directory with standalone scripts, like in other FM repo
+* Remove unused code
 
 ## 📖 Citation
 
@@ -261,7 +340,7 @@ If you use this work, please cite:
 ```
 @misc{puah2025eegdm,
       title={{EEGDM: EEG Representation Learning via Generative Diffusion Model}}, 
-      author={Jia Hong Puah, Sim Kuan Goh, Ziwei Zhang, Zixuan Ye, Chow Khuen Chan, Kheng Seang Lim, Si Lei Fong, Kok Sin Woon},
+      author={Jia Hong Puah and Sim Kuan Goh and Ziwei Zhang and Zixuan Ye and Chow Khuen Chan and Kheng Seang Lim and Si Lei Fong and Kok Sin Woon},
       year={2025},
       eprint={2508.14086},
       archivePrefix={arXiv},
