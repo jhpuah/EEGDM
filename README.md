@@ -94,7 +94,7 @@ EEGDM outperforms various EEG FMs despite the disadvantage in the volume of trai
 
 <div align="center">
 <br>
-<img src="assets/Result1.png" width="466">
+<img src="assets/Result1.png" width="566">
 </div>
 
 ## 🔀 Generalize to CHB-MIT
