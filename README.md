@@ -97,10 +97,10 @@ EEGDM outperforms various EEG FMs despite the disadvantage in the volume of trai
 <img src="assets/Result1.png" width="566">
 </div>
 
-## 🔀 Generalize to CHB-MIT
+## 🔀 Generalize to CHB-MIT and IIIC
 To verify the robustness of the learned representations in cross-domain generalization, we finetuned the model on a dataset with unseen characteristics.
 
-More specifically, the model pretrained on TUEV (containing sharp waves and artifacts) is finetuned on CHB-MIT for seizure detection.
+More specifically, the model pretrained on TUEV (containing sharp waves and artifacts) is finetuned on CHB-MIT for seizure detection and IIIC for seizure cllassification.
 
 The results show that EEGDM outperforms other FMs despite having a much smaller pretraining set that lacks variety, indicating high generalizability and robustness.
 
@@ -108,6 +108,14 @@ The results show that EEGDM outperforms other FMs despite having a much smaller 
 <br>
 <img src="assets/ResultChb.png" width="566">
 </div>
+
+The IIIC dataset was not commonly used in FM studies, hence we reproduced several baselines using their recommended hyperparameter
+
+<div align="center">
+<br>
+<img src="assets/ResultIIIC.png" width="566">
+</div>
+
 
 ## 🧠 Generation Sample
 
